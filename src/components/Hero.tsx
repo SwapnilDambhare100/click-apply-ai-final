@@ -22,9 +22,16 @@ export default function Hero() {
           <div className={styles.scanLine}></div>
           <div className={styles.mockupContent}>
             <div className={styles.mockupHeader}>AI Resume Parser</div>
-            <div className={styles.mockupBar} style={{ width: '80%' }}></div>
-            <div className={styles.mockupBar} style={{ width: '60%' }}></div>
-            <div className={styles.mockupBar} style={{ width: '90%' }}></div>
+            
+            <div className={styles.candidateProfile}>
+              <div className={styles.candidateAvatar}>AK</div>
+              <div className={styles.candidateDetails}>
+                <div className={styles.candidateName}>Alexander Kumar</div>
+                <div className={styles.candidateRole}>Senior Product Manager</div>
+                <div className={styles.candidateExp}>8+ Years Experience</div>
+              </div>
+            </div>
+
             <div className={styles.matchStatus}>Match Found: Procurement Manager (92%)</div>
             <div className={styles.sendingEmail}>Sending Application... ✓</div>
           </div>

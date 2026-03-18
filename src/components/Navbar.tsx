@@ -3,6 +3,7 @@
 import Link from 'next/link';
 import styles from './Navbar.module.css';
 import { useState } from 'react';
+import ThemeToggle from './ThemeToggle';
 
 export default function Navbar() {
   const [showTools, setShowTools] = useState(false);
@@ -48,6 +49,7 @@ export default function Navbar() {
             </div>
           )}
         </div>
+        <ThemeToggle />
         <Link href="/login" className={styles.loginText}>Login</Link>
         <Link href="/register" className={styles.loginBtn}>Get Started</Link>
       </div>

@@ -256,14 +256,9 @@
   overflow: hidden;
 }
 
-.progressFill {
+.progressFillSync {
   height: 100%;
-  background: var(--primary);
-  width: 0%;
-  animation: fillProgress 15s infinite linear;
+  background: linear-gradient(90deg, var(--primary), var(--success));
+  transition: width 1s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
-@keyframes fillProgress {
-  0% { width: 0%; }
-  100% { width: 100%; }
-}

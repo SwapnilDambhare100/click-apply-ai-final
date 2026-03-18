@@ -1,0 +1,94 @@
+.backgroundContainer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  z-index: 0;
+  pointer-events: none;
+}
+
+.gridOverlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(to right, var(--card-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--card-border) 1px, transparent 1px);
+  background-size: 60px 60px;
+  opacity: 0.4;
+  mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+  -webkit-mask-image: radial-gradient(circle at center, black 30%, transparent 80%);
+}
+
+.orb1, .orb2, .orb3 {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(90px);
+  opacity: 0.15;
+  animation: float 20s infinite ease-in-out alternate;
+}
+
+.orb1 {
+  width: 450px;
+  height: 450px;
+  background: var(--primary);
+  top: -100px;
+  left: -100px;
+  animation-delay: 0s;
+}
+
+.orb2 {
+  width: 550px;
+  height: 550px;
+  background: var(--secondary);
+  bottom: -200px;
+  right: -100px;
+  animation-duration: 25s;
+}
+
+.orb3 {
+  width: 350px;
+  height: 350px;
+  background: var(--success);
+  top: 40%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  animation-duration: 30s;
+  opacity: 0.1;
+}
+
+@keyframes float {
+  0% { transform: translate(0, 0) scale(1); }
+  50% { transform: translate(50px, 50px) scale(1.1); }
+  100% { transform: translate(-30px, 80px) scale(0.9); }
+}
+
+.floatingIcons {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+}
+
+.icon {
+  position: absolute;
+  font-size: 2.5rem;
+  opacity: 0.25;
+  filter: grayscale(10%);
+  transition: all 0.5s ease;
+  animation: bobble 15s infinite ease-in-out alternate;
+}
+
+.icon1 { top: 15%; left: 8%; animation-delay: 0s; }
+.icon2 { top: 25%; right: 12%; animation-delay: 2s; font-size: 3rem; }
+.icon3 { bottom: 20%; left: 15%; animation-delay: 4s; font-size: 3.5rem; }
+.icon4 { bottom: 35%; right: 8%; animation-delay: 1s; font-size: 2rem; }
+.icon5 { top: 45%; left: 5%; animation-delay: 3s; font-size: 1.5rem; }
+
+@keyframes bobble {
+  0% { transform: translateY(0) rotate(0deg); }
+  100% { transform: translateY(-40px) rotate(15deg); }
+}

@@ -1,12 +1,22 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import styles from './GlobalWidgets.module.css';
+
+type Message = { role: 'bot' | 'user'; text: string };
 
 export default function GlobalWidgets() {
   const [showChat, setShowChat] = useState(false);
   const [showPopup, setShowPopup] = useState(false);
   const [popupData, setPopupData] = useState({ name: '', text: '', time: '' });
+
+  // Chat State
+  const [messages, setMessages] = useState<Message[]>([
+    { role: 'bot', text: "Hi there! I'm your AI assistant. Ask me anything about auto-applying, resume parsing, or pricing!" }
+  ]);
+  const [inputValue, setInputValue] = useState('');
+  const [isTyping, setIsTyping] = useState(false);
+  const chatBodyRef = useRef<HTMLDivElement>(null);
 
   // Social Proof Popup Logic
   useEffect(() => {
@@ -30,6 +40,42 @@ export default function GlobalWidgets() {
 
     return () => clearInterval(interval);
   }, []);
+
+  // Auto-scroll chat
+  useEffect(() => {
+    if (chatBodyRef.current) {
+      chatBodyRef.current.scrollTop = chatBodyRef.current.scrollHeight;
+    }
+  }, [messages, isTyping]);
+
+  const handleSendMessage = () => {
+    if (!inputValue.trim() || isTyping) return;
+    
+    const userMsg = inputValue.trim();
+    setMessages(prev => [...prev, { role: 'user', text: userMsg }]);
+    setInputValue('');
+    setIsTyping(true);
+
+    setTimeout(() => {
+      let botResponse = "I'm still learning, but I'm here to help! Try exploring the Dashboard or the AI Tools dropdown at the top.";
+      const lowerInput = userMsg.toLowerCase();
+
+      if (lowerInput.includes('price') || lowerInput.includes('cost') || lowerInput.includes('plan') || lowerInput.includes('money')) {
+        botResponse = "We have a Free Basic plan, a Starter plan at ₹9, a Pro plan at ₹25, and an Unlimited plan at ₹99. You can view all features on the Pricing page!";
+      } else if (lowerInput.includes('resume') || lowerInput.includes('cv') || lowerInput.includes('upload') || lowerInput.includes('parse')) {
+        botResponse = "You can instantly upload and parse your resume by going to 'My Resume' in your Dashboard! Our AI perfectly extracts your skills and experience.";
+      } else if (lowerInput.includes('apply') || lowerInput.includes('job') || lowerInput.includes('work') || lowerInput.includes('interview')) {
+        botResponse = "To apply for jobs, head over to the 'Recommended Jobs' section inside the Dashboard. Just click 'Quick Apply' on any matched job! We are legally live-connected to Adzuna's job feed.";
+      } else if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('hey')) {
+        botResponse = "Hello! How can I accelerate your job hunt and career today?";
+      } else if (lowerInput.includes('who are you') || lowerInput.includes('what are you')) {
+        botResponse = "I am the ClickApplyAI Smart Assistant! I'm here to guide you through automating your job applications with next-gen AI.";
+      }
+
+      setMessages(prev => [...prev, { role: 'bot', text: botResponse }]);
+      setIsTyping(false);
+    }, 1500 + Math.random() * 1000); // 1.5s to 2.5s delay
+  };
 
   return (
     <>
@@ -55,12 +101,29 @@ export default function GlobalWidgets() {
               <h4>AI Support Assistant</h4>
               <button onClick={() => setShowChat(false)}>✖</button>
             </div>
-            <div className={styles.chatBody}>
-              <div className={styles.botMessage}>Hi there! I'm your AI assistant. How can I help you automate your job search today?</div>
+            <div className={styles.chatBody} ref={chatBodyRef}>
+              {messages.map((msg, idx) => (
+                <div key={idx} className={msg.role === 'bot' ? styles.botMessage : styles.userMessage}>
+                  {msg.text}
+                </div>
+              ))}
+              {isTyping && (
+                <div className={styles.botMessage}>
+                  <span className={styles.typingDot}>.</span>
+                  <span className={styles.typingDot}>.</span>
+                  <span className={styles.typingDot}>.</span>
+                </div>
+              )}
             </div>
             <div className={styles.chatInput}>
-              <input type="text" placeholder="Type your message..." />
-              <button>Send</button>
+              <input 
+                type="text" 
+                placeholder="Type your message..." 
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => e.key === 'Enter' && handleSendMessage()}
+              />
+              <button onClick={handleSendMessage}>Send</button>
             </div>
           </div>
         )}
