@@ -1,0 +1,61 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id           String    @id @default(uuid())
+  name         String
+  email        String    @unique
+  passwordHash String
+  credits      Int       @default(10)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  profile      Profile?
+  applications Application[]
+}
+
+model Profile {
+  id            String   @id @default(uuid())
+  userId        String   @unique
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  resumeFileUrl String?
+  domain        String?
+  experience    Int?
+  skills        String
+  extractedText String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model Job {
+  id             String    @id @default(uuid())
+  title          String
+  company        String
+  description    String
+  requirements   String
+  recruiterEmail String?
+  source         String?
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  applications   Application[]
+}
+
+model Application {
+  id          String   @id @default(uuid())
+  userId      String
+  jobId       String
+  status      String   @default("Applied") // e.g., "Pending", "Applied", "Failed"
+  dateApplied DateTime @default(now())
+  
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, jobId])
+}

@@ -1,0 +1,55 @@
+.container {
+  min-height: calc(100vh - 200px);
+  padding: 4rem 2rem;
+  max-width: 800px;
+  margin: 0 auto;
+}
+
+.content {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 3rem;
+  border-radius: 16px;
+}
+
+.content h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.lastUpdated {
+  color: var(--foreground);
+  opacity: 0.6;
+  font-size: 0.9rem;
+  margin-bottom: 3rem;
+}
+
+.content section {
+  margin-bottom: 2.5rem;
+}
+
+.content h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+  color: var(--primary);
+}
+
+.content p {
+  color: var(--foreground);
+  opacity: 0.8;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.content ul {
+  list-style-position: inside;
+  padding-left: 1rem;
+  color: var(--foreground);
+  opacity: 0.8;
+  line-height: 1.6;
+}
+
+.content li {
+  margin-bottom: 0.5rem;
+}

@@ -1,0 +1,154 @@
+.container {
+  padding: 2rem 4rem;
+  max-width: 1000px;
+}
+
+.header {
+  margin-bottom: 3rem;
+}
+
+.header h1 {
+  font-size: 2rem;
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+.uploadSection {
+  margin-bottom: 4rem;
+}
+
+.dropzone {
+  border: 2px dashed var(--card-border);
+  border-radius: 16px;
+  padding: 4rem 2rem;
+  text-align: center;
+  background: rgba(255, 255, 255, 0.02);
+  transition: all 0.2s;
+  cursor: pointer;
+}
+
+.dropzone:hover {
+  border-color: var(--primary);
+  background: rgba(74, 222, 128, 0.05);
+}
+
+.uploadIcon {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.dropzone h3 {
+  font-size: 1.25rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
+}
+
+.dropzone p {
+  color: var(--foreground);
+  opacity: 0.6;
+  margin-bottom: 1.5rem;
+  font-size: 0.875rem;
+}
+
+.browseBtn {
+  background: var(--primary);
+  color: #fff;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.browseBtn:hover {
+  background: var(--primary-hover);
+}
+
+.parsedDataSection h2 {
+  font-size: 1.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.profileCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 2rem;
+  border-radius: 12px;
+}
+
+.profileHeader {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  padding-bottom: 1.5rem;
+  border-bottom: 1px solid var(--card-border);
+}
+
+.avatar {
+  width: 60px;
+  height: 60px;
+  background: var(--primary);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+}
+
+.profileHeader h3 {
+  font-size: 1.25rem;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+}
+
+.domain {
+  color: var(--primary);
+  font-weight: 500;
+}
+
+.skillsSection h4 {
+  font-size: 1rem;
+  color: var(--foreground);
+  opacity: 0.8;
+  margin-bottom: 1rem;
+}
+
+.skillsList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.skillBadge {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid var(--card-border);
+  padding: 0.5rem 1rem;
+  border-radius: 999px;
+  font-size: 0.875rem;
+  font-weight: 500;
+}
+
+.editBtn {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--card-border);
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.editBtn:hover {
+  background: rgba(255, 255, 255, 0.05);
+}
