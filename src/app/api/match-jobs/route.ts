@@ -1,15 +1,50 @@
 import { NextResponse } from 'next/server';
 
+function calculateMatchScore(jobDescription: string, jobTitle: string, skills: string[], targetRoles: string[]): number {
+  if (!skills || skills.length === 0) return Math.floor(Math.random() * 15) + 75; // Baseline if no skills provided
+  
+  const text = (jobDescription + ' ' + jobTitle).toLowerCase();
+  let matches = 0;
+  
+  skills.forEach(skill => {
+    if (text.includes(skill.toLowerCase())) {
+      matches += 1;
+    }
+  });
+
+  // Base score 60. Each matching skill adds points. Max score limit 95 before role bonus.
+  let calculatedScore = 60 + (matches * 7);
+  if (calculatedScore > 95) calculatedScore = 95;
+  
+  // Bonus if job title explicitly includes a target role
+  if (targetRoles && targetRoles.length > 0) {
+    const isRoleMatch = targetRoles.some(role => jobTitle.toLowerCase().includes(role.toLowerCase()));
+    if (isRoleMatch) {
+      calculatedScore = Math.min(99, calculatedScore + 10);
+    }
+  }
+
+  return calculatedScore;
+}
+
 export async function POST(request: Request) {
   try {
-    const { profile } = await request.json();
+    // Also accepting the new parsed JSON structure
+    const body = await request.json();
+    const profile = body.profile || body.data || body;
 
     if (!profile) {
       return NextResponse.json({ error: 'Profile data is required' }, { status: 400 });
     }
 
-    const keyword = (profile.domain || '').toLowerCase().trim();
-    const encodedQuery = encodeURIComponent(profile.domain || 'Software Engineer');
+    const queryDomain = (profile.targetRoles && profile.targetRoles.length > 0) 
+                        ? profile.targetRoles[0] 
+                        : (profile.domain || 'Software Engineer');
+                        
+    const keyword = queryDomain.toLowerCase().trim();
+    const encodedQuery = encodeURIComponent(queryDomain);
+    const skills = profile.skills || [];
+    const targetRoles = profile.targetRoles || [keyword];
 
     const adzunaAppId = process.env.ADZUNA_APP_ID;
     const adzunaAppKey = process.env.ADZUNA_APP_KEY;
@@ -30,7 +65,7 @@ export async function POST(request: Request) {
             company: job.company.display_name,
             location: job.location.display_name,
             description: job.description.substring(0, 150) + '...',
-            matchScore: Math.floor(Math.random() * 10) + 90,
+            matchScore: calculateMatchScore(job.description, job.title, skills, targetRoles),
             posted: 'Recently via Adzuna',
             url: job.redirect_url,
             isStrictMatch: job.title.toLowerCase().includes(keyword) || job.company.display_name.toLowerCase().includes(keyword)
@@ -40,14 +75,14 @@ export async function POST(request: Request) {
       } catch(e) { console.error("Adzuna error: ", e); }
     }
 
-    // 2. Fetch from Jooble API (Indian Market - in.jooble.org)
+    // 2. Fetch from Jooble API
     if (joobleApiKey) {
       try {
         const joobleUrl = `https://in.jooble.org/api/${joobleApiKey}`;
         const response = await fetch(joobleUrl, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ keywords: profile.domain || 'Software Engineer', location: "India" })
+          body: JSON.stringify({ keywords: queryDomain, location: "India" })
         });
         const data = await response.json();
         if (data.jobs) {
@@ -56,9 +91,9 @@ export async function POST(request: Request) {
             title: job.title,
             company: job.company,
             location: job.location,
-            description: job.snippet.substring(0, 150).replace(/<\/?[^>]+(>|$)/g, "") + '...', // strip HTML
-            matchScore: Math.floor(Math.random() * 10) + 85,
-            posted: 'Recently via Jooble IN',
+            description: job.snippet.substring(0, 150).replace(/<\/?[^>]+(>|$)/g, "") + '...',
+            matchScore: calculateMatchScore(job.snippet, job.title, skills, targetRoles),
+            posted: 'Recently via Jooble',
             url: job.link,
             isStrictMatch: job.title.toLowerCase().includes(keyword) || job.company.toLowerCase().includes(keyword)
           }));
@@ -67,40 +102,39 @@ export async function POST(request: Request) {
       } catch(e) { console.error("Jooble error: ", e); }
     }
 
-    // STRICT LOCAL FILTERING
     let validJobs = allFetchedJobs;
     if (keyword && keyword !== 'software engineer' && allFetchedJobs.length > 0) {
       validJobs = allFetchedJobs.filter((job: any) => job.isStrictMatch);
     }
 
-    // Return successfully if we got API results
     if (validJobs.length > 0) {
-      // Sort by match score descending to present best jobs first
       validJobs.sort((a, b) => b.matchScore - a.matchScore);
       return NextResponse.json({
         success: true,
-        data: validJobs.slice(0, 15), // Return top 15 matches from aggregated APIs
-        message: 'Live Indian jobs fetched successfully from multiple APIs'
+        data: validJobs.slice(0, 15),
+        message: 'Live jobs fetched and matched successfully'
       });
     }
 
-    // FALLBACK: Highly Localized Indian Market Mocks
+    // FALLBACK: Mocks
     console.log('Using Local Indian Market fallback mocks.');
     await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
 
-    const fallbackDomain = profile.domain || 'Software Engineer';
+    const fallbackDomain = queryDomain;
     const localIndianMocks = [
-      { id: 'mk1', title: `${fallbackDomain} - Associate`, company: 'Tata Consultancy Services (TCS)', location: 'Pune, Maharashtra', matchScore: 97, posted: '1d ago via Naukri' },
-      { id: 'mk2', title: `Senior ${fallbackDomain}`, company: 'Infosys', location: 'Bengaluru, Karnataka', matchScore: 92, posted: '2d ago via LinkedIn' },
-      { id: 'mk3', title: `Lead ${fallbackDomain}`, company: 'Reliance Jio', location: 'Navi Mumbai, Maharashtra', matchScore: 88, posted: '5h ago via Indeed' },
+      { id: 'mk1', title: `${fallbackDomain} - Associate`, company: 'Tata Consultancy Services (TCS)', location: 'Pune, Maharashtra', matchScore: calculateMatchScore('We need Node.js and React expertise.', `${fallbackDomain} - Associate`, skills, targetRoles), posted: '1d ago via Naukri' },
+      { id: 'mk2', title: `Senior ${fallbackDomain}`, company: 'Infosys', location: 'Bengaluru, Karnataka', matchScore: calculateMatchScore('Looking for 5 years experience in JS.', `Senior ${fallbackDomain}`, skills, targetRoles), posted: '2d ago via LinkedIn' },
+      { id: 'mk3', title: `Lead ${fallbackDomain}`, company: 'Reliance Jio', location: 'Navi Mumbai, Maharashtra', matchScore: calculateMatchScore('Expertise in procurement and vendor management.', `Lead ${fallbackDomain}`, skills, targetRoles), posted: '5h ago via Indeed' },
       { id: 'mk4', title: `${fallbackDomain} Specialist`, company: 'Wipro', location: 'Hyderabad, Telangana', matchScore: 84, posted: '3d ago via Glassdoor' },
       { id: 'mk5', title: `${fallbackDomain} Consultant`, company: 'HCL Technologies', location: 'Noida, Uttar Pradesh', matchScore: 81, posted: '12h ago via Instahyre' },
     ];
+    
+    localIndianMocks.sort((a, b) => b.matchScore - a.matchScore);
 
     return NextResponse.json({
       success: true,
       data: localIndianMocks,
-      message: 'Job matching completed via High-Precision Indian Market Simulator'
+      message: 'Job matching completed via Simulator'
     });
   } catch (error) {
     console.error('Error matching jobs:', error);

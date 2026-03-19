@@ -1,6 +1,5 @@
 import Navbar from '../components/Navbar';
 import Hero from '../components/Hero';
-import NetworkBackground from '../components/NetworkBackground';
 import SearchAgent from '../components/SearchAgent';
 import HowItWorksVideo from '../components/HowItWorksVideo';
 import Features from '../components/Features';
@@ -12,7 +11,6 @@ export default function Home() {
     <div className={styles.mainContainer}>
       <Navbar />
       <main style={{ position: 'relative' }}>
-        <NetworkBackground />
         <Hero />
         <SearchAgent />
         <HowItWorksVideo />

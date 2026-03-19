@@ -73,33 +73,8 @@ export default function Dashboard() {
   }, []);
 
   return (
-    <div className={styles.dashboardLayout}>
-      <aside className={styles.sidebar}>
-        <Link href="/" className={styles.brandLink}>
-          <img src="/logo.png" alt="Logo" className={styles.logoImg} />
-          <span className={styles.brandText}>ClickApplyAI</span>
-        </Link>
-        <nav className={styles.nav}>
-          <Link href="/dashboard" className={styles.navItemActive}>Overview</Link>
-          <Link href="/dashboard/resume" className={styles.navItem}>My Resume</Link>
-          <Link href="/dashboard/jobs" className={styles.navItem}>Recommended Jobs {jobs.length > 0 && <span className={styles.navBadge}>{jobs.length}</span>}</Link>
-          <Link href="/dashboard/applications" className={styles.navItem}>Applications</Link>
-          <Link href="/dashboard/settings" className={styles.navItem}>Settings</Link>
-        </nav>
-        <div className={styles.creditsSection}>
-          <div className={styles.creditValue}>10</div>
-          <div className={styles.creditLabel}>Credits Remaining</div>
-          <button className={styles.topUpBtn}>Buy Credits</button>
-        </div>
-      </aside>
-
-      <main className={styles.mainContent}>
-        {/* Beautiful Dynamic Mesh Background for Dashboard */}
-        <div className={styles.dashboardBg}></div>
-        <div className={styles.dashboardBgOrb1}></div>
-        <div className={styles.dashboardBgOrb2}></div>
-
-        <header className={styles.candidateHeader}>
+    <>
+      <header className={styles.candidateHeader}>
           <div className={styles.candidateAvatarLarge}>JD</div>
           <div className={styles.candidateInfo}>
             <h1>Welcome back, John Doe! 👋</h1>
@@ -111,7 +86,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div className={styles.topRightActions}>
-            <button className={styles.editProfileBtn}>Edit Profile</button>
+            <Link href="/dashboard/profile" className={styles.editProfileBtn} style={{textDecoration: 'none'}}>Edit Profile</Link>
             <div className={styles.userProfileSmall}>JD</div>
           </div>
         </header>
@@ -221,8 +196,7 @@ export default function Dashboard() {
                {jobs.length === 0 && <p style={{color: 'var(--foreground)'}}>No matches found at the moment. Update your resume to trigger a new search.</p>}
              </div>
           )}
-        </section>
-      </main>
-    </div>
+      </section>
+    </>
   );
 }

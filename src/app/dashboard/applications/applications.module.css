@@ -1,0 +1,100 @@
+.container {
+  padding: 2rem;
+  width: 100%;
+  animation: fadeIn 0.4s ease-out;
+}
+
+.header {
+  margin-bottom: 2rem;
+}
+
+.header h1 {
+  font-size: 2.2rem;
+  font-weight: 800;
+  margin-bottom: 0.5rem;
+}
+
+.header p {
+  color: var(--foreground);
+  opacity: 0.7;
+}
+
+.tableCard {
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.tableHeader {
+  display: flex;
+  padding: 1.2rem 1.5rem;
+  background: rgba(0, 0, 0, 0.05);
+  border-bottom: 1px solid var(--card-border);
+  font-weight: 700;
+  font-size: 0.9rem;
+  color: var(--foreground);
+  opacity: 0.9;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tableBody {
+  display: flex;
+  flex-direction: column;
+}
+
+.tableRow {
+  display: flex;
+  padding: 1.5rem;
+  border-bottom: 1px solid var(--card-border);
+  align-items: center;
+  transition: background 0.2s;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.tableRow:hover {
+  background: rgba(139, 92, 246, 0.05);
+}
+
+.colCompany { flex: 2; display: flex; flex-direction: column; gap: 0.2rem; }
+.colDate { flex: 1; font-variant-numeric: tabular-nums; opacity: 0.8; }
+.colMatch { flex: 1; font-weight: 700; color: var(--primary); }
+.colStatus { flex: 1; display: flex; justify-content: flex-end; }
+
+.companyName {
+  font-weight: 700;
+  font-size: 1.1rem;
+}
+
+.roleName {
+  font-size: 0.9rem;
+  opacity: 0.7;
+}
+
+.statusBadge {
+  padding: 0.4rem 1rem;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+}
+
+.statusApplied { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
+.statusReview { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
+.statusInterview { background: rgba(16, 185, 129, 0.1); color: #10b981; }
+.statusRejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
+
+@media (max-width: 768px) {
+  .colDate, .colMatch { display: none; }
+  .tableHeader { display: none; }
+  .tableRow { flex-direction: column; align-items: flex-start; gap: 1rem; }
+  .colStatus { justify-content: flex-start; width: 100%; }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}

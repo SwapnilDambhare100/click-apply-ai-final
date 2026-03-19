@@ -9,12 +9,15 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "@google/generative-ai": "^0.24.1",
     "@prisma/client": "^5.21.1",
     "@types/nodemailer": "^7.0.11",
     "mammoth": "^1.12.0",
     "next": "16.1.7",
     "nodemailer": "^8.0.3",
     "pdf-parse": "^2.4.5",
+    "pdf2json": "^4.0.2",
+    "pdfjs-dist": "^5.5.207",
     "razorpay": "^2.9.6",
     "react": "19.2.3",
     "react-dom": "19.2.3"
