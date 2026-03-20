@@ -9,6 +9,12 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true);
   const [applyingTo, setApplyingTo] = useState<string | null>(null);
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
+  const [user, setUser] = useState({ name: 'User', email: '', avatar: 'U' });
+
+  useEffect(() => {
+    const stored = localStorage.getItem('clickapply_user');
+    if (stored) setUser(JSON.parse(stored));
+  }, []);
 
   const handleAutoApply = async (job: any) => {
     if (job.matchScore < 80) {
@@ -75,19 +81,19 @@ export default function Dashboard() {
   return (
     <>
       <header className={styles.candidateHeader}>
-          <div className={styles.candidateAvatarLarge}>JD</div>
+          <div className={styles.candidateAvatarLarge}>{user.avatar}</div>
           <div className={styles.candidateInfo}>
-            <h1>Welcome back, John Doe! 👋</h1>
-            <p className={styles.candidateRole}>Senior Product Manager • 8+ Years Experience</p>
+            <h1>Welcome back, {user.name}! 👋</h1>
+            <p className={styles.candidateRole}>{user.email || 'Complete your profile to get started'}</p>
             <div className={styles.candidateTags}>
-              <span className={styles.profileTag}>Product Strategy</span>
-              <span className={styles.profileTag}>Agile</span>
-              <span className={styles.profileTag}>Data Analytics</span>
+              <span className={styles.profileTag}>AI Job Matching</span>
+              <span className={styles.profileTag}>Auto Apply</span>
+              <span className={styles.profileTag}>Resume Parsing</span>
             </div>
           </div>
           <div className={styles.topRightActions}>
             <Link href="/dashboard/profile" className={styles.editProfileBtn} style={{textDecoration: 'none'}}>Edit Profile</Link>
-            <div className={styles.userProfileSmall}>JD</div>
+            <div className={styles.userProfileSmall}>{user.avatar}</div>
           </div>
         </header>
 
@@ -95,7 +101,7 @@ export default function Dashboard() {
           <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--foreground)' }}>📧 Automated Job Matching: Trial</h2>
           <p style={{ marginBottom: '1.5rem', color: 'var(--foreground)', opacity: 0.8, lineHeight: 1.6 }}>
             Based on the AI analysis, the platform will automatically send stunning HTML job application emails directly to recruiters, attaching your resume. <br/>
-            <strong>Click below to generate and instantly view the exact professional draft targeting unitedofficial100@gmail.com!</strong>
+            <strong>Click below to generate and instantly view the exact professional draft targeting {user.email || 'your email'}!</strong>
           </p>
           <button 
             className={styles.applyBtn} 
@@ -104,11 +110,11 @@ export default function Dashboard() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({
-                  toEmail: 'unitedofficial100@gmail.com',
-                  jobTitle: 'Senior Product Manager',
-                  company: 'Tata Motors',
-                  applicantName: 'John Doe',
-                  applicantEmail: 'john.doe@example.com',
+                  toEmail: user.email || 'swapnildambhare100@gmail.com',
+                  jobTitle: 'Software Engineer',
+                  company: 'Top Company',
+                  applicantName: user.name,
+                  applicantEmail: user.email,
                   matchScore: 92
                 })
               });
@@ -123,7 +129,7 @@ export default function Dashboard() {
               }
             }}
           >
-            Generate & View Draft for unitedofficial100@gmail.com
+            Generate & View Draft for {user.email || 'your email'}
           </button>
         </section>
 
