@@ -4,11 +4,41 @@ import { useState, useEffect } from 'react';
 import styles from './HowItWorksVideo.module.css';
 
 const SIMULATION_STEPS = [
-  { url: 'linkedin.com/jobs/search?q=Product+Manager', status: "[AI Agent] Scanning 2,450 new job postings for 'Product Manager'...", progress: 10 },
-  { url: 'linkedin.com/jobs/view/98765', status: "[AI Agent] Match Found! Senior Product Manager at TechCorp (94% Match).", progress: 30 },
-  { url: 'linkedin.com/jobs/apply/98765', status: "[AI Agent] Generating personalized Cover Letter and answering screening questions...", progress: 60 },
-  { url: 'linkedin.com/jobs/apply/98765/submit', status: "[AI Agent] Attaching John_Doe_Resume.pdf and bypassing reCAPTCHA...", progress: 85 },
-  { url: 'clickapply.ai/dashboard/tracker', status: "[AI Agent] ✅ Application 1/50 submitted successfully! Moving to next job...", progress: 100 }
+  { 
+    url: 'linkedin.com/jobs/search?q=Product+Manager', 
+    status: "Scanning 2,450 new job postings for 'Product Manager'...", 
+    progress: 10,
+    action: "scanning",
+    data: { company: "Google", role: "Product Manager", match: 92 }
+  },
+  { 
+    url: 'linkedin.com/jobs/view/98765', 
+    status: "Match Found! Senior Product Manager at TechCorp (94% Match).", 
+    progress: 35,
+    action: "matched",
+    data: { company: "TechCorp", role: "Sr. Product Manager", match: 94 }
+  },
+  { 
+    url: 'linkedin.com/jobs/apply/98765', 
+    status: "Generating personalized Cover Letter and answering screening questions...", 
+    progress: 65,
+    action: "applying",
+    data: { company: "TechCorp", role: "Sr. Product Manager", match: 94 }
+  },
+  { 
+    url: 'linkedin.com/jobs/apply/98765/submit', 
+    status: "Attaching Resume and bypassing reCAPTCHA...", 
+    progress: 85,
+    action: "submitting",
+    data: { company: "TechCorp", role: "Sr. Product Manager", match: 94 }
+  },
+  { 
+    url: 'clickapply.ai/dashboard/tracker', 
+    status: "✅ Application 1/50 submitted successfully! Moving to next job...", 
+    progress: 100,
+    action: "done",
+    data: { company: "TechCorp", role: "Sr. Product Manager", match: 94 }
+  }
 ];
 
 export default function HowItWorksVideo() {
@@ -20,9 +50,9 @@ export default function HowItWorksVideo() {
     if (isPlaying) {
       interval = setInterval(() => {
         setStepIndex((prev) => (prev + 1) % SIMULATION_STEPS.length);
-      }, 3500); // Change step every 3.5 seconds
+      }, 4000);
     } else {
-      setStepIndex(0); // Reset when closed
+      setStepIndex(0);
     }
     return () => clearInterval(interval);
   }, [isPlaying]);
@@ -32,6 +62,7 @@ export default function HowItWorksVideo() {
   return (
     <section className={styles.videoSection} id="how-it-works">
       <div className={styles.header}>
+        <div className={styles.badge}>Live Simulation</div>
         <h2>See AI Automation in Action</h2>
         <p>Watch how our agent applies to 50 jobs in under 2 minutes.</p>
       </div>
@@ -48,33 +79,95 @@ export default function HowItWorksVideo() {
                <div className={styles.line2}></div>
                <div className={styles.line3}></div>
             </div>
+            <div className={styles.previewText}>Click to Start Simulator</div>
           </div>
         ) : (
           <div className={styles.videoPlayerActive}>
             <div className={styles.simulatedScreen}>
+              {/* Browser Header */}
               <div className={styles.simTopBar}>
-                <span></span><span></span><span></span>
-                <div className={styles.simUrl}>{currentStep.url}</div>
-              </div>
-              <div className={styles.simBody}>
-                <div className={styles.simSidebar}></div>
-                <div className={styles.simMain}>
-                   <div className={styles.simJobCard}>
-                     <div className={styles.aiCursor}>👆</div>
-                     <div className={styles.clickEffect}></div>
-                   </div>
-                   <div className={styles.simJobCard} style={{ opacity: stepIndex > 1 ? 0.3 : 1 }}></div>
-                   <div className={styles.simJobCard} style={{ opacity: stepIndex > 2 ? 0.3 : 1 }}></div>
+                <div className={styles.windowControls}>
+                  <span></span><span></span><span></span>
+                </div>
+                <div className={styles.tabs}>
+                  <div className={styles.tabActive}>LinkedIn Jobs</div>
+                  <div className={styles.tab}>ClickApply Dashboard</div>
+                </div>
+                <div className={styles.simUrl}>
+                  <span className={styles.lockIcon}>🔒</span>
+                  {currentStep.url}
                 </div>
               </div>
+
+              {/* Browser Body */}
+              <div className={styles.simBody}>
+                <div className={styles.simSidebar}>
+                   <div className={styles.skeletonLine} style={{ width: '80%' }}></div>
+                   <div className={styles.skeletonLine} style={{ width: '60%' }}></div>
+                   <div className={styles.skeletonLine} style={{ width: '90%' }}></div>
+                   <div className={styles.skeletonLine} style={{ width: '70%', marginTop: 'auto' }}></div>
+                </div>
+                <div className={styles.simMain}>
+                   {/* Search Bar Simulation */}
+                   <div className={styles.simSearch}>
+                      <div className={styles.simSearchInput}>Product Manager</div>
+                      <div className={styles.simSearchBtn}>Search</div>
+                   </div>
+
+                   {/* Job Cards Simulation */}
+                   <div className={styles.simJobCardsContainer}>
+                      {[1, 2, 3].map((i) => (
+                        <div key={i} className={`${styles.simJobCard} ${i === 1 && currentStep.action !== 'scanning' ? styles.cardActive : ''}`}>
+                          <div className={styles.cardLogo}>
+                             {i === 1 ? '🚀' : '🏢'}
+                          </div>
+                          <div className={styles.cardInfo}>
+                             <div className={styles.cardTitle}>{i === 1 ? currentStep.data.company : 'Enterprise Inc'}</div>
+                             <div className={styles.cardSubtitle}>{i === 1 ? currentStep.data.role : 'Manager Role'}</div>
+                             <div className={styles.cardTags}>
+                                <span className={styles.tag}>Full-time</span>
+                                <span className={styles.tag}>Remote</span>
+                             </div>
+                          </div>
+                          {i === 1 && currentStep.action !== 'scanning' && (
+                             <div className={styles.cardScore}>{currentStep.data.match}% Match</div>
+                          )}
+                        </div>
+                      ))}
+                   </div>
+                </div>
+              </div>
+
+              {/* AI Agent Avatar */}
+              <div className={styles.robotAgent}>
+                <div className={styles.robotHead}>
+                   <div className={styles.robotEye}></div>
+                   <div className={styles.robotEye}></div>
+                </div>
+                <div className={styles.robotBody}></div>
+              </div>
+
+              {/* Floating AI HUD */}
               <div className={styles.aiOverlay}>
-                 <div className={styles.aiOverlayText}>{currentStep.status}</div>
+                 <div className={styles.hudHeader}>
+                    <span className={styles.pulse}></span>
+                    AI AGENT ACTIVE
+                 </div>
+                 <div className={styles.aiOverlayText}>
+                    <span className={styles.prefix}>{">_"}</span>
+                    {currentStep.status}
+                 </div>
                  <div className={styles.progressBar}>
                    <div className={styles.progressFillSync} style={{ width: `${currentStep.progress}%` }}></div>
                  </div>
+                 {currentStep.action === 'applying' && (
+                   <div className={styles.generatingVisual}>
+                      <span></span><span></span><span></span>
+                   </div>
+                 )}
               </div>
             </div>
-            <button className={styles.closeBtn} onClick={() => setIsPlaying(false)}>Close Simulator</button>
+            <button className={styles.closeBtn} onClick={() => setIsPlaying(false)}>Exit Simulator</button>
           </div>
         )}
       </div>

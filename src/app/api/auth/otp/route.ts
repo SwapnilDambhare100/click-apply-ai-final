@@ -22,6 +22,19 @@ export async function POST(req: Request) {
       otpStore.set(email, { otp, expires });
       console.log(`[OTP] Generated ${otp} for ${email}`);
 
+      // Validate environment variables
+      if (!process.env.SMTP_HOST || !process.env.SMTP_USER || !process.env.SMTP_PASS) {
+        console.error('SMTP Configuration Missing:', {
+          host: !!process.env.SMTP_HOST,
+          user: !!process.env.SMTP_USER,
+          pass: !!process.env.SMTP_PASS
+        });
+        return NextResponse.json({ 
+          success: false, 
+          error: 'SMTP Configuration Missing. Please check your .env.local and RESTART your dev server (Ctrl+C and npm run dev).' 
+        }, { status: 500 });
+      }
+
       // Configure Nodemailer
       const transporter = nodemailer.createTransport({
         host: process.env.SMTP_HOST,
