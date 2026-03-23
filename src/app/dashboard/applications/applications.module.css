@@ -1,97 +1,251 @@
 .container {
-  padding: 2rem;
+  padding: 1rem 0;
   width: 100%;
   animation: fadeIn 0.4s ease-out;
 }
 
 .header {
-  margin-bottom: 2rem;
+  margin-bottom: 3rem;
 }
 
 .header h1 {
-  font-size: 2.2rem;
+  font-size: 2rem;
   font-weight: 800;
   margin-bottom: 0.5rem;
+  color: var(--foreground);
 }
 
 .header p {
   color: var(--foreground);
   opacity: 0.7;
+  font-size: 0.95rem;
 }
 
-.tableCard {
-  overflow: hidden;
+/* TOP METRICS GRID */
+.metricsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 3rem;
+}
+
+.metricCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 1.5rem;
+  border-radius: 16px;
   display: flex;
   flex-direction: column;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
 }
 
-.tableHeader {
-  display: flex;
-  padding: 1.2rem 1.5rem;
-  background: rgba(0, 0, 0, 0.05);
-  border-bottom: 1px solid var(--card-border);
-  font-weight: 700;
-  font-size: 0.9rem;
+.metricValue {
+  font-size: 2.2rem;
+  font-weight: 800;
   color: var(--foreground);
-  opacity: 0.9;
+  margin-bottom: 0.25rem;
+  line-height: 1;
+}
+
+.metricLabel {
+  font-size: 0.85rem;
+  color: var(--foreground);
+  opacity: 0.7;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 
-.tableBody {
+/* BAR CHART AREA */
+.chartSection {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 20px;
+  padding: 2.5rem;
+  margin-bottom: 3rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+}
+
+.chartHeader {
+  margin-bottom: 2rem;
+}
+
+.chartHeader h2 {
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--foreground);
+}
+
+.chartContainer {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  height: 200px;
+  gap: 10px;
+}
+
+.barCol {
   display: flex;
   flex-direction: column;
-}
-
-.tableRow {
-  display: flex;
-  padding: 1.5rem;
-  border-bottom: 1px solid var(--card-border);
   align-items: center;
-  transition: background 0.2s;
+  flex: 1;
+  height: 100%;
+  justify-content: flex-end;
+  gap: 0.75rem;
+  group: trigger;
 }
 
-.tableRow:last-child {
-  border-bottom: none;
-}
-
-.tableRow:hover {
+.barWrapper {
+  width: 100%;
+  max-width: 40px;
+  height: 100%;
   background: rgba(139, 92, 246, 0.05);
+  border-radius: 8px 8px 0 0;
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  border-bottom: 1px solid var(--card-border);
 }
 
-.colCompany { flex: 2; display: flex; flex-direction: column; gap: 0.2rem; }
-.colDate { flex: 1; font-variant-numeric: tabular-nums; opacity: 0.8; }
-.colMatch { flex: 1; font-weight: 700; color: var(--primary); }
-.colStatus { flex: 1; display: flex; justify-content: flex-end; }
+.barFill {
+  width: 100%;
+  background: linear-gradient(180deg, var(--primary), #a855f7);
+  border-radius: 8px 8px 0 0;
+  transition: height 1s cubic-bezier(0.4, 0, 0.2, 1);
+  position: relative;
+}
 
-.companyName {
+.barFill:hover {
+  filter: brightness(1.2);
+}
+
+.barTooltip {
+  position: absolute;
+  top: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--foreground);
+  color: var(--background);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
   font-weight: 700;
-  font-size: 1.1rem;
+  opacity: 0;
+  transition: opacity 0.2s;
+  pointer-events: none;
 }
 
-.roleName {
+.barWrapper:hover .barTooltip {
+  opacity: 1;
+}
+
+.barLabel {
+  font-size: 0.8rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  font-weight: 600;
+}
+
+/* APPLICATIONS LIST */
+.appSection {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.appCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  transition: transform 0.2s, border-color 0.2s;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.appCard:hover {
+  transform: translateY(-2px);
+  border-color: rgba(139, 92, 246, 0.3);
+}
+
+.appLogo {
+  width: 55px;
+  height: 55px;
+  background: #f8fafc;
+  border: 1px solid var(--card-border);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+
+.appLogo img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 8px;
+}
+
+.appInitials {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.appInfo {
+  flex: 2;
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.appTitle {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--foreground);
+}
+
+.appCompany {
+  font-size: 0.95rem;
+  color: var(--primary);
+  font-weight: 600;
+}
+
+.appMeta {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  align-items: flex-end;
+}
+
+.appDate {
+  font-size: 0.85rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  font-weight: 500;
+}
+
+.appScore {
   font-size: 0.9rem;
-  opacity: 0.7;
+  font-weight: 700;
+  color: var(--success);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
 }
 
-.statusBadge {
-  padding: 0.4rem 1rem;
+.appPill {
+  padding: 0.5rem 1.25rem;
   border-radius: 999px;
   font-size: 0.85rem;
-  font-weight: 600;
-  text-align: center;
-}
-
-.statusApplied { background: rgba(59, 130, 246, 0.1); color: #3b82f6; }
-.statusReview { background: rgba(245, 158, 11, 0.1); color: #f59e0b; }
-.statusInterview { background: rgba(16, 185, 129, 0.1); color: #10b981; }
-.statusRejected { background: rgba(239, 68, 68, 0.1); color: #ef4444; }
-
-@media (max-width: 768px) {
-  .colDate, .colMatch { display: none; }
-  .tableHeader { display: none; }
-  .tableRow { flex-direction: column; align-items: flex-start; gap: 1rem; }
-  .colStatus { justify-content: flex-start; width: 100%; }
+  font-weight: 700;
+  text-transform: capitalize;
+  letter-spacing: 0.05em;
 }
 
 @keyframes fadeIn {

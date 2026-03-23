@@ -1,143 +1,123 @@
 import { NextResponse } from 'next/server';
+import { PrismaClient } from '@prisma/client';
 
-function calculateMatchScore(jobDescription: string, jobTitle: string, skills: string[], targetRoles: string[]): number {
-  if (!skills || skills.length === 0) return Math.floor(Math.random() * 15) + 75; // Baseline if no skills provided
-  
-  const text = (jobDescription + ' ' + jobTitle).toLowerCase();
+// Hardcoded Match engine 
+function calculateMatchScore(jobDescription: string = '', jobTitle: string = '', skills: string[] = [], targetTags: string[] = []): number {
+  const safeDesc = jobDescription || '';
+  const safeTitle = jobTitle || '';
+  const text = (safeDesc + ' ' + safeTitle).toLowerCase();
   let matches = 0;
   
-  skills.forEach(skill => {
-    if (text.includes(skill.toLowerCase())) {
-      matches += 1;
-    }
-  });
+  if (skills && skills.length > 0) {
+    skills.forEach(skill => {
+        if (skill && text.includes(skill.toLowerCase())) matches += 1;
+    });
+  }
 
-  // Base score 60. Each matching skill adds points. Max score limit 95 before role bonus.
-  let calculatedScore = 60 + (matches * 7);
-  if (calculatedScore > 95) calculatedScore = 95;
+  // Base score 60. Each matching skill adds points. Max score limit 92 before role bonus.
+  let calculatedScore = 60 + (matches * 6);
+  if (calculatedScore > 92) calculatedScore = 92;
   
-  // Bonus if job title explicitly includes a target role
-  if (targetRoles && targetRoles.length > 0) {
-    const isRoleMatch = targetRoles.some(role => jobTitle.toLowerCase().includes(role.toLowerCase()));
-    if (isRoleMatch) {
-      calculatedScore = Math.min(99, calculatedScore + 10);
+  // Multi-Tag Role Bonus: If any of the target tags match the title, give a MASSIVE boost
+  if (targetTags && targetTags.length > 0) {
+    const matchedTag = targetTags.find(tag => tag && safeTitle.toLowerCase().includes(tag.toLowerCase()));
+    if (matchedTag) {
+      // Direct title match = elite priority (98%+)
+      calculatedScore = 98 + (matches * 0.1); 
+    } else {
+      // Check description
+      const descMatch = targetTags.some(tag => tag && safeDesc.toLowerCase().includes(tag.toLowerCase()));
+      if (descMatch) {
+         calculatedScore = Math.min(92, calculatedScore + 15);
+      }
     }
   }
 
-  return calculatedScore;
+  return Math.max(70, Math.min(99, calculatedScore));
 }
 
 export async function POST(request: Request) {
+  const prisma = new PrismaClient();
   try {
-    // Also accepting the new parsed JSON structure
     const body = await request.json();
-    const profile = body.profile || body.data || body;
-
-    if (!profile) {
-      return NextResponse.json({ error: 'Profile data is required' }, { status: 400 });
-    }
-
-    const queryDomain = (profile.targetRoles && profile.targetRoles.length > 0) 
-                        ? profile.targetRoles[0] 
-                        : (profile.domain || 'Software Engineer');
-                        
-    const keyword = queryDomain.toLowerCase().trim();
-    const encodedQuery = encodeURIComponent(queryDomain);
-    const skills = profile.skills || [];
-    const targetRoles = profile.targetRoles || [keyword];
-
-    const adzunaAppId = process.env.ADZUNA_APP_ID;
-    const adzunaAppKey = process.env.ADZUNA_APP_KEY;
-    const joobleApiKey = process.env.JOOBLE_API_KEY;
-
-    let allFetchedJobs: any[] = [];
-
-    // 1. Fetch from Adzuna API (Indian Market)
-    if (adzunaAppId && adzunaAppKey) {
-      try {
-        const adzunaUrl = `https://api.adzuna.com/v1/api/jobs/in/search/1?app_id=${adzunaAppId}&app_key=${adzunaAppKey}&results_per_page=30&what_phrase=${encodedQuery}`;
-        const response = await fetch(adzunaUrl);
-        const data = await response.json();
-        if (data.results) {
-          const formattedAdzuna = data.results.map((job: any) => ({
-            id: 'adz_' + job.id.toString(),
-            title: job.title,
-            company: job.company.display_name,
-            location: job.location.display_name,
-            description: job.description.substring(0, 150) + '...',
-            matchScore: calculateMatchScore(job.description, job.title, skills, targetRoles),
-            posted: 'Recently via Adzuna',
-            url: job.redirect_url,
-            isStrictMatch: job.title.toLowerCase().includes(keyword) || job.company.display_name.toLowerCase().includes(keyword)
-          }));
-          allFetchedJobs = [...allFetchedJobs, ...formattedAdzuna];
-        }
-      } catch(e) { console.error("Adzuna error: ", e); }
-    }
-
-    // 2. Fetch from Jooble API
-    if (joobleApiKey) {
-      try {
-        const joobleUrl = `https://in.jooble.org/api/${joobleApiKey}`;
-        const response = await fetch(joobleUrl, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ keywords: queryDomain, location: "India" })
-        });
-        const data = await response.json();
-        if (data.jobs) {
-          const formattedJooble = data.jobs.map((job: any) => ({
-            id: 'jbl_' + job.id.toString(),
-            title: job.title,
-            company: job.company,
-            location: job.location,
-            description: job.snippet.substring(0, 150).replace(/<\/?[^>]+(>|$)/g, "") + '...',
-            matchScore: calculateMatchScore(job.snippet, job.title, skills, targetRoles),
-            posted: 'Recently via Jooble',
-            url: job.link,
-            isStrictMatch: job.title.toLowerCase().includes(keyword) || job.company.toLowerCase().includes(keyword)
-          }));
-          allFetchedJobs = [...allFetchedJobs, ...formattedJooble];
-        }
-      } catch(e) { console.error("Jooble error: ", e); }
-    }
-
-    let validJobs = allFetchedJobs;
-    if (keyword && keyword !== 'software engineer' && allFetchedJobs.length > 0) {
-      validJobs = allFetchedJobs.filter((job: any) => job.isStrictMatch);
-    }
-
-    if (validJobs.length > 0) {
-      validJobs.sort((a, b) => b.matchScore - a.matchScore);
-      return NextResponse.json({
-        success: true,
-        data: validJobs.slice(0, 15),
-        message: 'Live jobs fetched and matched successfully'
-      });
-    }
-
-    // FALLBACK: Mocks
-    console.log('Using Local Indian Market fallback mocks.');
-    await new Promise(resolve => setTimeout(resolve, 800)); // Simulate delay
-
-    const fallbackDomain = queryDomain;
-    const localIndianMocks = [
-      { id: 'mk1', title: `${fallbackDomain} - Associate`, company: 'Tata Consultancy Services (TCS)', location: 'Pune, Maharashtra', matchScore: calculateMatchScore('We need Node.js and React expertise.', `${fallbackDomain} - Associate`, skills, targetRoles), posted: '1d ago via Naukri' },
-      { id: 'mk2', title: `Senior ${fallbackDomain}`, company: 'Infosys', location: 'Bengaluru, Karnataka', matchScore: calculateMatchScore('Looking for 5 years experience in JS.', `Senior ${fallbackDomain}`, skills, targetRoles), posted: '2d ago via LinkedIn' },
-      { id: 'mk3', title: `Lead ${fallbackDomain}`, company: 'Reliance Jio', location: 'Navi Mumbai, Maharashtra', matchScore: calculateMatchScore('Expertise in procurement and vendor management.', `Lead ${fallbackDomain}`, skills, targetRoles), posted: '5h ago via Indeed' },
-      { id: 'mk4', title: `${fallbackDomain} Specialist`, company: 'Wipro', location: 'Hyderabad, Telangana', matchScore: 84, posted: '3d ago via Glassdoor' },
-      { id: 'mk5', title: `${fallbackDomain} Consultant`, company: 'HCL Technologies', location: 'Noida, Uttar Pradesh', matchScore: 81, posted: '12h ago via Instahyre' },
-    ];
     
-    localIndianMocks.sort((a, b) => b.matchScore - a.matchScore);
+    // Determine if we are doing a profile-match or a specific tag-search
+    const isExplicitSearch = Array.isArray(body.tags) && body.tags.length > 0;
+    const tags = isExplicitSearch ? body.tags : (body.profile?.targetRoles || ['Software Engineer']);
+    
+    const limit = body.limit || 50;
+    const skills = body.profile?.skills || [];
+
+    // Blazing-fast Local Database Query
+    const twentyFiveDaysAgo = new Date();
+    twentyFiveDaysAgo.setDate(twentyFiveDaysAgo.getDate() - 25);
+
+    console.log(`Matching Engine: ${isExplicitSearch ? 'EXPLICIT SEARCH' : 'PROFILE MATCH'} - Tags: [${tags.join(', ')}]`);
+
+    // Fetch all active jobs physically synced to the DB
+    const storedJobs = await (prisma.job as any).findMany({
+      where: {
+        isLive: true,
+        postedAt: { gt: twentyFiveDaysAgo }
+      },
+      orderBy: { postedAt: 'desc' }
+    });
+
+    // Score jobs against multi-tag profile
+    let validJobs = storedJobs.map((dbJob: any) => {
+      const computedScore = calculateMatchScore(dbJob.description, dbJob.title, skills, tags);
+      const daysOld = Math.floor((Date.now() - (dbJob.postedAt?.getTime() || Date.now())) / (1000 * 60 * 60 * 24));
+      
+      const titleMatch = tags.some((tag: string) => (dbJob.title || '').toLowerCase().includes(tag.toLowerCase()));
+      const descMatch = tags.some((tag: string) => (dbJob.description || '').toLowerCase().includes(tag.toLowerCase()));
+      
+      // Strict Filter: Title matches are golden. Description matches are acceptable.
+      const isTagMatch = titleMatch || descMatch;
+
+      return {
+        id: dbJob.id,
+        title: dbJob.title,
+        company: dbJob.company,
+        location: dbJob.location || 'Remote',
+        description: dbJob.description,
+        matchScore: dbJob.matchScore || computedScore,
+        posted: daysOld === 0 ? 'Today via Agent' : `${daysOld}d ago via Agent`,
+        url: dbJob.url,
+        isTagMatch
+      }
+    });
+
+    // 1. Filter: If tags exist, prioritize tag matches
+    if (tags.length > 0 && tags[0] !== '') {
+       validJobs = validJobs.filter((job: any) => job.isTagMatch);
+    }
+
+    // 2. Location Filter (New)
+    const targetLoc = body.location || '';
+    if (targetLoc && targetLoc.toLowerCase() !== 'india' && targetLoc.toLowerCase() !== 'all') {
+      validJobs = validJobs.filter((job: any) => 
+        (job.location || '').toLowerCase().includes(targetLoc.toLowerCase()) ||
+        (targetLoc.toLowerCase() === 'remote' && (job.location || '').toLowerCase().includes('remote'))
+      );
+    }
+
+    // 3. Sort & Limit
+    validJobs.sort((a: any, b: any) => b.matchScore - a.matchScore);
+    const resultCount = Math.min(validJobs.length, limit);
+    const finalResult = validJobs.slice(0, resultCount);
 
     return NextResponse.json({
       success: true,
-      data: localIndianMocks,
-      message: 'Job matching completed via Simulator'
+      data: finalResult,
+      totalMatches: validJobs.length,
+      limitApplied: limit,
+      message: `Successfully matched ${finalResult.length} roles against ${tags.length} target tags.`
     });
+
   } catch (error) {
-    console.error('Error matching jobs:', error);
+    console.error('Matching Engine Error:', error);
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
+  } finally {
+    await prisma.$disconnect();
   }
 }

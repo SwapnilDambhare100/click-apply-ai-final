@@ -1,8 +1,8 @@
 // Credits store: persists user credits in localStorage
-// 10 free credits on first load, each Quick Apply costs 1 credit
+// 25 free credits on first load, each Quick Apply costs 1 credit
 
 const CREDITS_KEY = 'clickapply_credits';
-const DEFAULT_CREDITS = 10;
+const DEFAULT_CREDITS = 25;
 
 export function getCredits(): number {
   if (typeof window === 'undefined') return DEFAULT_CREDITS;

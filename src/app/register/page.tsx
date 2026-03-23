@@ -1,9 +1,10 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './register.module.css';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar';
+import Toast from '@/components/Toast';
 
 export default function Register() {
   const [name, setName] = useState('');
@@ -13,6 +14,18 @@ export default function Register() {
   const [step, setStep] = useState<'details' | 'otp'>('details');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'warning'|'info'} | null>(null);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleSendOTP = async (e?: React.FormEvent) => {
     if (e) e.preventDefault();
@@ -29,6 +42,10 @@ export default function Register() {
       const data = await res.json();
       if (data.success) {
         setStep('otp');
+        setResendTimer(30);
+        if (data.mockOtp) {
+          setToast({ message: `[DEV MODE] Your simulated OTP code is: ${data.mockOtp}`, type: 'info' });
+        }
       } else {
         setError(data.error || 'Failed to send verification code');
       }
@@ -160,8 +177,16 @@ export default function Register() {
               </button>
               <button 
                 type="button" 
+                onClick={() => handleSendOTP()} 
+                disabled={loading || resendTimer > 0}
+                style={{ background: 'none', border: 'none', color: resendTimer > 0 ? '#94a3b8' : 'var(--primary)', cursor: resendTimer > 0 ? 'not-allowed' : 'pointer', marginTop: '1rem', width: '100%', fontSize: '14px', fontWeight: 500 }}
+              >
+                {resendTimer > 0 ? `Resend Code in ${resendTimer}s` : 'Resend Code'}
+              </button>
+              <button 
+                type="button" 
                 onClick={() => setStep('details')} 
-                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', marginTop: '1rem', width: '100%', fontSize: '14px' }}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginTop: '0.75rem', width: '100%', fontSize: '14px' }}
               >
                 Go Back
               </button>
@@ -173,6 +198,14 @@ export default function Register() {
           </div>
         </div>
       </div>
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </>
   );
 }

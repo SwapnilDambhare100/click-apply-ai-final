@@ -9,9 +9,9 @@ export default function Footer() {
           <p>Automating your job search with intelligence.</p>
         </div>
         <div className={styles.links}>
-          <a href="#">Privacy Policy</a>
-          <a href="#">Terms of Service</a>
-          <a href="#">Contact Support</a>
+          <a href="/privacy">Privacy Policy</a>
+          <a href="/terms">Terms of Service</a>
+          <a href="/support">Contact Support</a>
         </div>
       </div>
       <div className={styles.copyright}>

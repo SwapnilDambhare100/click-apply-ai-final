@@ -1,17 +1,17 @@
 import { NextResponse } from 'next/server';
 import nodemailer from 'nodemailer';
+import prisma from '@/lib/prisma';
 
 export async function POST(request: Request) {
   try {
-    const { toEmail, jobTitle, company, applicantName, applicantEmail, matchScore } = await request.json();
+    const { toEmail, jobTitle, company, applicantName, applicantEmail, matchScore, jobId } = await request.json();
 
     if (!toEmail) {
       return NextResponse.json({ error: 'Recipient email is required' }, { status: 400 });
     }
 
     // Configure the SMTP transporter (requires EMAIL_USER and EMAIL_PASS in .env.local)
-    // For trial purposes, we simulate success if keys are missing but log the HTML.
-    const user = process.env.EMAIL_USER;
+    const userEmail = process.env.EMAIL_USER;
     const pass = process.env.EMAIL_PASS;
 
     const emailHtml = `
@@ -50,31 +50,47 @@ export async function POST(request: Request) {
       </div>
     `;
 
-    if (!user || !pass) {
-      console.log("Mocking Email Send. Draft HTML:\n", emailHtml);
+    // 1. Persist to DB if jobId and applicantEmail are provided
+    if (jobId && applicantEmail) {
+      try {
+        const u = await prisma.user.findUnique({ where: { email: applicantEmail } });
+        if (u) {
+          await prisma.application.upsert({
+            where: { userId_jobId: { userId: u.id, jobId: jobId } },
+            update: { status: 'Applied', dateApplied: new Date() },
+            create: { userId: u.id, jobId: jobId, status: 'Applied' }
+          });
+        }
+      } catch (dbErr) {
+        console.error('DB Persistence Error:', dbErr);
+      }
+    }
+
+    const isPlaceholder = userEmail === 'your_email@gmail.com' || pass === 'your_app_password';
+
+    if (!userEmail || !pass || isPlaceholder) {
       return NextResponse.json({ 
         success: true, 
-        message: 'Draft generated successfully. To actually send, please configure EMAIL_USER and EMAIL_PASS in .env.local.',
+        message: 'Draft generated successfully (DB tracked).',
         draft: emailHtml
       });
     }
 
     const transporter = nodemailer.createTransport({
-      service: 'gmail', // You can change this to any SMTP provider
-      auth: { user, pass }
+      service: 'gmail',
+      auth: { user: userEmail, pass }
     });
 
     const info = await transporter.sendMail({
-      from: `"${applicantName} (via ClickApplyAI)" <${user}>`,
+      from: `"${applicantName} (via ClickApplyAI)" <${userEmail}>`,
       to: toEmail,
       subject: `Job Application: ${jobTitle} - ${applicantName}`,
-      html: emailHtml,
-      // attachments: [ { filename: 'Resume.pdf', content: '...' } ] // Simulated attachment
+      html: emailHtml
     });
 
-    return NextResponse.json({ success: true, message: 'Email sent successfully via Nodemailer to ' + toEmail, draft: emailHtml, messageId: info.messageId });
+    return NextResponse.json({ success: true, message: 'Email sent successfully', draft: emailHtml, messageId: info.messageId });
   } catch (error) {
     console.error('Error sending email:', error);
-    return NextResponse.json({ error: 'Internal Server Error while sending email' }, { status: 500 });
+    return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }

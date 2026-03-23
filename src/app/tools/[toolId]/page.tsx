@@ -20,6 +20,8 @@ const toolConfig: Record<string, { title: string, desc: string, inputLabel: stri
   'job-description': { title: 'Job Description Generator', desc: 'For recruiters: Generate a precise JD.', inputLabel: 'Role Title', placeholder: 'e.g. Full Stack Developer' },
 };
 
+import ResumeBuilder from './ResumeBuilder';
+
 export default function ToolPage() {
   const params = useParams();
   const toolId = typeof params?.toolId === 'string' ? params.toolId : '';
@@ -28,6 +30,18 @@ export default function ToolPage() {
   const [input, setInput] = useState('');
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState('');
+
+  if (toolId === 'resume-builder') {
+    return (
+      <>
+        <Navbar />
+        <main className={styles.container} style={{ minHeight: '80vh' }}>
+          <ResumeBuilder />
+        </main>
+        <Footer />
+      </>
+    );
+  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -75,12 +89,24 @@ export default function ToolPage() {
     setIsGenerating(true);
     setResult('');
     
-    // Simulate AI Generation Processing Time
-    setTimeout(() => {
-      const generatedContent = generateMockResult(toolId, input);
-      setResult(generatedContent);
+    try {
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ toolId, input })
+      });
+      const data = await res.json();
+      if (data.success) {
+        setResult(data.text);
+      } else {
+        alert(data.error || 'Generation failed.');
+      }
+    } catch (e) {
+      console.error(e);
+      alert('Network error during AI generation.');
+    } finally {
       setIsGenerating(false);
-    }, 2000);
+    }
   };
 
   return (

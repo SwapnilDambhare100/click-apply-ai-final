@@ -1,20 +1,75 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './settings.module.css';
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState({
-    autoApplyEnabled: true,
+    autoApplyEnabled: false,
+    autoApplyKeywords: "",
     emailNotifications: true,
-    maxApplicationsPerDay: 10,
-    minMatchScore: 80,
+    maxApplicationsPerDay: 15,
+    minMatchScore: 70,
   });
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    async function fetchSettings() {
+      const stored = localStorage.getItem('clickapply_user');
+      const user = stored ? JSON.parse(stored) : null;
+      if (!user?.email) return setLoading(false);
+
+      try {
+        const res = await fetch(`/api/user/settings?email=${user.email}`);
+        const data = await res.json();
+        if (data.success) {
+          setSettings({
+            autoApplyEnabled: data.settings.autoApplyEnabled,
+            autoApplyKeywords: data.settings.autoApplyKeywords || "",
+            emailNotifications: data.settings.emailNotifications ?? true,
+            maxApplicationsPerDay: data.settings.maxApplicationsPerDay || 20,
+            minMatchScore: data.settings.minMatchScore || 70,
+          });
+        }
+      } catch (err) {
+        console.error("Failed to fetch settings:", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchSettings();
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    alert('Settings saved successfully!');
+    setSaving(true);
+    const stored = localStorage.getItem('clickapply_user');
+    const user = stored ? JSON.parse(stored) : null;
+    
+    try {
+      const res = await fetch('/api/user/settings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: user?.email,
+          ...settings
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        alert('Automation preferences saved successfully!');
+      } else {
+        alert('Error: ' + data.error);
+      }
+    } catch (err) {
+      alert('Network error while saving settings.');
+    } finally {
+      setSaving(false);
+    }
   };
+
+  if (loading) return <div className={styles.container}><p>Loading settings...</p></div>;
 
   return (
     <div className={styles.container}>
@@ -34,8 +89,8 @@ export default function SettingsPage() {
             
             <div className={styles.settingItem}>
               <div className={styles.settingInfo}>
-                <label>Enable Auto-Apply Agent</label>
-                <span>Allow the AI to automatically send applications when a high match is found.</span>
+                <label>Enable 1-Click Email Applications ⚡</label>
+                <span>Receive instant job matches in your inbox and apply with a single click.</span>
               </div>
               <label className={styles.switch}>
                 <input 
@@ -45,6 +100,22 @@ export default function SettingsPage() {
                 />
                 <span className={styles.slider}></span>
               </label>
+            </div>
+
+            <div className={styles.settingItem} style={{ flexDirection: 'column', alignItems: 'flex-start', gap: '10px' }}>
+              <div className={styles.settingInfo}>
+                <label>Automation Keywords (Targets)</label>
+                <span>The system will only notify you for jobs matching these keywords.</span>
+              </div>
+              <div style={{ width: '100%' }}>
+                <input 
+                  type="text" 
+                  className={styles.textInput}
+                  placeholder="e.g. Procurement, Supply Chain, Logistics"
+                  value={settings.autoApplyKeywords}
+                  onChange={e => setSettings({...settings, autoApplyKeywords: e.target.value})}
+                />
+              </div>
             </div>
 
             <div className={styles.settingItem}>
@@ -78,7 +149,7 @@ export default function SettingsPage() {
                 <input 
                   type="number" 
                   min="50" max="100" 
-                  value={settings.minMatchScore}
+                 value={settings.minMatchScore}
                   onChange={e => setSettings({...settings, minMatchScore: Number(e.target.value)})}
                 />
               </div>
@@ -101,7 +172,9 @@ export default function SettingsPage() {
           </div>
 
           <div className={styles.actions}>
-            <button type="submit" className={styles.saveBtn}>Save Preferences</button>
+            <button type="submit" className={styles.saveBtn} disabled={saving}>
+              {saving ? 'Saving...' : 'Save Preferences'}
+            </button>
           </div>
         </form>
       </div>

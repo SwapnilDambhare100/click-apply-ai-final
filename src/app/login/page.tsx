@@ -1,9 +1,11 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './login.module.css';
 import Link from 'next/link';
 import Navbar from '../../components/Navbar';
+import Toast from '@/components/Toast';
+import { signIn } from 'next-auth/react';
 
 export default function Login() {
   const [email, setEmail] = useState('');
@@ -11,6 +13,18 @@ export default function Login() {
   const [step, setStep] = useState<'email' | 'otp'>('email');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
+  const [resendTimer, setResendTimer] = useState(0);
+  const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'warning'|'info'} | null>(null);
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (resendTimer > 0) {
+      interval = setInterval(() => {
+        setResendTimer(prev => prev - 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [resendTimer]);
 
   const handleSendOTP = async (targetEmail: string) => {
     setLoading(true);
@@ -24,6 +38,10 @@ export default function Login() {
       const data = await res.json();
       if (data.success) {
         setStep('otp');
+        setResendTimer(30);
+        if (data.mockOtp) {
+          setToast({ message: `[DEV MODE] Your simulated OTP code is: ${data.mockOtp}`, type: 'info' });
+        }
       } else {
         setError(data.error || 'Failed to send verification code');
       }
@@ -65,10 +83,18 @@ export default function Login() {
   };
 
   const handleGoogleSignIn = () => {
-    const userEmail = prompt('Enter your Google email address:');
+    const userEmail = prompt('Enter your Google email address (Simulation):');
     if (userEmail && userEmail.includes('@')) {
-      setEmail(userEmail);
-      handleSendOTP(userEmail);
+      setLoading(true);
+      // Mock login bypassing real OAuth and SMTP crashes
+      const name = userEmail.split('@')[0].replace(/[._]/g, ' ').replace(/\b\w/g, c => c.toUpperCase());
+      localStorage.setItem('clickapply_user', JSON.stringify({
+        name,
+        email: userEmail,
+        avatar: name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2),
+      }));
+      window.dispatchEvent(new Event('storage'));
+      window.location.href = '/dashboard';
     }
   };
 
@@ -97,7 +123,7 @@ export default function Login() {
                   <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
                   <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
                 </svg>
-                {loading ? 'Sending Code...' : 'Continue with Google'}
+                {loading ? 'Authenticating...' : 'Continue with Google'}
               </button>
 
               <div className={styles.divider}>
@@ -135,8 +161,16 @@ export default function Login() {
               </button>
               <button 
                 type="button" 
+                onClick={() => handleSendOTP(email)} 
+                disabled={loading || resendTimer > 0}
+                style={{ background: 'none', border: 'none', color: resendTimer > 0 ? '#94a3b8' : 'var(--primary)', cursor: resendTimer > 0 ? 'not-allowed' : 'pointer', marginTop: '1rem', width: '100%', fontSize: '14px', fontWeight: 500 }}
+              >
+                {resendTimer > 0 ? `Resend Code in ${resendTimer}s` : 'Resend Code'}
+              </button>
+              <button 
+                type="button" 
                 onClick={() => setStep('email')} 
-                style={{ background: 'none', border: 'none', color: 'var(--primary)', cursor: 'pointer', marginTop: '1rem', width: '100%', fontSize: '14px' }}
+                style={{ background: 'none', border: 'none', color: '#64748b', cursor: 'pointer', marginTop: '0.75rem', width: '100%', fontSize: '14px' }}
               >
                 Change Email Address
               </button>
@@ -148,6 +182,14 @@ export default function Login() {
           </div>
         </div>
       </div>
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </>
   );
 }

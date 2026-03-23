@@ -3,6 +3,10 @@
 import { useState, useEffect } from 'react';
 import styles from './dashboard.module.css';
 import Link from 'next/link';
+import { loadProfile, CandidateProfile } from '@/lib/profileStore';
+import AdvancedSearchBar from '@/components/AdvancedSearchBar';
+import Toast from '@/components/Toast';
+import JobCard from '@/components/JobCard';
 
 export default function Dashboard() {
   const [jobs, setJobs] = useState<any[]>([]);
@@ -10,199 +14,263 @@ export default function Dashboard() {
   const [applyingTo, setApplyingTo] = useState<string | null>(null);
   const [appliedJobs, setAppliedJobs] = useState<Set<string>>(new Set());
   const [user, setUser] = useState({ name: 'User', email: '', avatar: 'U' });
+  const [expandedJobId, setExpandedJobId] = useState<string | null>(null);
+  const [profile, setProfile] = useState<CandidateProfile | null>(null);
+  const [toast, setToast] = useState<{message: string, type: 'success'|'error'|'warning'|'info'} | null>(null);
 
   useEffect(() => {
     const stored = localStorage.getItem('clickapply_user');
-    if (stored) setUser(JSON.parse(stored));
+    let currentUser: any = null;
+    if (stored) {
+      currentUser = JSON.parse(stored);
+      setUser(currentUser);
+    }
+    const loadedProfile = loadProfile();
+    if (loadedProfile) setProfile(loadedProfile);
+
+    // Fetch Applied History
+    if (currentUser?.email) {
+      fetch(`/api/user/applications?email=${currentUser.email}`)
+        .then(res => res.json())
+        .then(data => {
+          if (data.success && data.appliedJobIds) {
+            setAppliedJobs(new Set(data.appliedJobIds));
+          }
+        })
+        .catch(err => console.error("Failed to fetch applications history", err));
+    }
   }, []);
 
-  const handleAutoApply = async (job: any) => {
-    if (job.matchScore < 80) {
-      alert("Match score is below 80%. Manual review recommended before applying.");
-      return;
+  const getAtsScore = () => {
+    if (!profile || (!profile.skills?.length && !profile.targetRoles?.length)) {
+      return { score: 0, status: 'No Profile', message: 'Please upload your resume to get your ATS score.', missing: ['Missing Resume data'] };
     }
-    setApplyingTo(job.id);
+    let score = 40;
+    if (profile.skills?.length > 5) score += 20;
+    if (profile.skills?.length > 10) score += 15;
+    if (profile.totalExperience > 2) score += 15;
+    if (profile.targetRoles?.length > 0) score += 10;
+    if (score > 98) score = 98;
+    
+    let status = 'Excellent';
+    if (score < 60) status = 'Needs Improvement';
+    else if (score < 80) status = 'Good';
+
+    let message = 'Your resume matches well with generic roles, but could use more specifics.';
+    if (score >= 80) message = 'Your resume is highly optimized for ATS parsing and keyword extraction.';
+
+    const missing = [];
+    if (!profile.skills || profile.skills.length < 5) missing.push('Add more targeted skills');
+    if (!profile.targetRoles || profile.targetRoles.length === 0) missing.push('Specify target roles explicitly');
+    if (profile.totalExperience === 0) missing.push('Add comprehensive work experience details');
+
+    return { score, status, message, missing };
+  };
+
+  const atsData = getAtsScore();
+  const strokeDashoffset = 283 - (283 * Math.max(0, atsData.score) / 100);
+
+  const toggleExpandJob = (id: string) => {
+    setExpandedJobId(prev => prev === id ? null : id);
+  };
+
+  const handleApplySuccess = (jobId: string) => {
+    setAppliedJobs(prev => {
+      const newSet = new Set(prev);
+      newSet.add(jobId);
+      return newSet;
+    });
+    // Trigger global storage event to update layout header nav credits
+    window.dispatchEvent(new Event('storage'));
+  };
+
+  const fetchJobs = async (tags: string[] = ['Procurement'], target = 10) => {
+    setLoading(true);
     try {
-      const res = await fetch('/api/send-application', {
+      const res = await fetch('/api/match-jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          toEmail: 'unitedofficial100@gmail.com',
-          jobTitle: job.title,
-          company: job.company,
-          applicantName: 'ClickApplyAI Trial User',
-          applicantEmail: 'john.doe@example.com',
-          matchScore: job.matchScore
+        body: JSON.stringify({ 
+          profile,
+          tags,
+          limit: target 
         })
       });
       const data = await res.json();
-      if (data.success) {
-        setAppliedJobs(prev => {
-          const newSet = new Set(prev);
-          newSet.add(job.id);
-          return newSet;
-        });
-        if (!data.messageId) {
-            alert('Application Draft Generated! But EMAIL NOT SENT! You must configure EMAIL_USER and a Google App Password for EMAIL_PASS in your .env.local file first.');
-        } else {
-            alert(`Application sent successfully to unitedofficial100@gmail.com for ${job.company}!`);
-        }
+      if (data.success && data.data) {
+        setJobs(data.data);
+      } else if (data.data && data.data.length === 0) {
+        setJobs([]);
       }
     } catch (err) {
       console.error(err);
-      alert("Failed to submit application.");
     } finally {
-      setApplyingTo(null);
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    // Fetch live jobs from our new robust Multi-Platform API
-    const fetchJobs = async () => {
-      try {
-        const res = await fetch('/api/match-jobs', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ profile: { domain: 'Product Manager' } })
-        });
-        const data = await res.json();
-        if (data.success && data.data) {
-          setJobs(data.data);
-        }
-      } catch (err) {
-        console.error(err);
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchJobs();
-  }, []);
+    if (profile) {
+      fetchJobs(['Procurement']);
+    }
+  }, [profile]);
+
+  const handleSearch = (tags: string[], target: number, location: string) => {
+    fetchJobs(tags, target);
+  };
 
   return (
     <>
-      <header className={styles.candidateHeader}>
-          <div className={styles.candidateAvatarLarge}>{user.avatar}</div>
-          <div className={styles.candidateInfo}>
-            <h1>Welcome back, {user.name}! 👋</h1>
-            <p className={styles.candidateRole}>{user.email || 'Complete your profile to get started'}</p>
-            <div className={styles.candidateTags}>
-              <span className={styles.profileTag}>AI Job Matching</span>
-              <span className={styles.profileTag}>Auto Apply</span>
-              <span className={styles.profileTag}>Resume Parsing</span>
-            </div>
-          </div>
-          <div className={styles.topRightActions}>
-            <Link href="/dashboard/profile" className={styles.editProfileBtn} style={{textDecoration: 'none'}}>Edit Profile</Link>
-            <div className={styles.userProfileSmall}>{user.avatar}</div>
-          </div>
-        </header>
+      <div className={styles.topSearchWrapper}>
+        <AdvancedSearchBar onSearch={handleSearch} />
+      </div>
 
-        <section className={styles.section} style={{ marginBottom: '4rem', background: 'rgba(99, 102, 241, 0.05)', padding: '2rem', borderRadius: '20px', border: '1px dashed var(--primary)' }}>
-          <h2 style={{ fontSize: '1.5rem', marginBottom: '0.5rem', color: 'var(--foreground)' }}>📧 Automated Job Matching: Trial</h2>
-          <p style={{ marginBottom: '1.5rem', color: 'var(--foreground)', opacity: 0.8, lineHeight: 1.6 }}>
-            Based on the AI analysis, the platform will automatically send stunning HTML job application emails directly to recruiters, attaching your resume. <br/>
-            <strong>Click below to generate and instantly view the exact professional draft targeting {user.email || 'your email'}!</strong>
-          </p>
-          <button 
-            className={styles.applyBtn} 
-            onClick={async () => {
-              const res = await fetch('/api/send-application', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                  toEmail: user.email || 'swapnildambhare100@gmail.com',
-                  jobTitle: 'Software Engineer',
-                  company: 'Top Company',
-                  applicantName: user.name,
-                  applicantEmail: user.email,
-                  matchScore: 92
-                })
-              });
-              const data = await res.json();
-              if (data.draft) {
-                const w = window.open('', '_blank');
-                if (w) {
-                  w.document.write(data.draft);
-                  w.document.title = "Application Draft Preview";
-                  w.document.close();
-                }
-              }
-            }}
-          >
-            Generate & View Draft for {user.email || 'your email'}
-          </button>
-        </section>
+      <div className={styles.dashboardGrid}>
+        {/* MIDDLE COLUMN */}
+        <div className={styles.middleColumn}>
+          <section className={styles.section}>
+            <div className={styles.sectionHeader}>
+              <h2>Active Job Matches <span className={styles.matchCountBadge}>{jobs.length > 0 ? `${jobs.length} Ready` : 'Scanning...'}</span></h2>
+              <Link href="/dashboard/jobs" style={{textDecoration: 'none'}}>
+                <button className={styles.viewAllBtn}>View All 50+ Matches ➔</button>
+              </Link>
+            </div>
 
-        <div className={styles.statsGrid}>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>📨</div>
-            <div>
-              <div className={styles.statLabel}>Total Applications Sent</div>
-              <div className={styles.statValue}>15</div>
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>🎯</div>
-            <div>
-              <div className={styles.statLabel}>Average Match Score</div>
-              <div className={styles.statValue}>92%</div>
-            </div>
-          </div>
-          <div className={styles.statCard}>
-            <div className={styles.statIcon}>⚡</div>
-            <div>
-              <div className={styles.statLabel}>Profile Status</div>
-              <div className={styles.statValueActive}>Active</div>
-            </div>
-          </div>
+            {loading ? (
+               <div className={styles.loadingContainer}>
+                 <div className={styles.loadingSpinner}></div>
+                 <p>AI is scanning LinkedIn, Indeed, and Jooble for your perfect matches...</p>
+               </div>
+            ) : (
+               <div className={styles.jobList}>
+                 {jobs.map((job) => (
+                   <JobCard 
+                     key={job.id}
+                     job={job}
+                     user={user}
+                     appliedJobs={appliedJobs}
+                     onApplySuccess={handleApplySuccess}
+                     onToast={(msg, type) => setToast({message: msg, type})}
+                   />
+                 ))}
+                 {jobs.length === 0 && <p style={{color: 'var(--foreground)'}}>No matches found at the moment. Update your resume to trigger a new search.</p>}
+               </div>
+            )}
+          </section>
         </div>
 
-        <section className={styles.section}>
-          <div className={styles.sectionHeader}>
-            <h2>Active Job Matches <span className={styles.matchCountBadge}>{jobs.length > 0 ? `${jobs.length} Ready` : 'Scanning...'}</span></h2>
-            <button className={styles.viewAllBtn}>View All 50+ Matches ➔</button>
+        {/* RIGHT COLUMN */}
+        <div className={styles.rightColumn}>
+          <header className={styles.sidebarHeader}>
+            <div className={styles.candidateAvatarSmall}>{user.avatar}</div>
+            <div className={styles.candidateInfoMini}>
+              <h2 style={{fontSize: '1rem', fontWeight: 800, margin: 0}}>{user.name}</h2>
+              <p style={{fontSize: '0.75rem', opacity: 0.6, margin: 0}}>{user.email}</p>
+            </div>
+            <Link href="/dashboard/profile" className={styles.editProfileIcon} title="Edit Profile">⚙️</Link>
+          </header>
+
+          <div className={styles.sidebarStats}>
+            <div className={styles.statCardMini}>
+              <span className={styles.statIconLine}>📨</span>
+              <div className={styles.statRow}>
+                <span className={styles.statLabelMini}>Applications</span>
+                <span className={styles.statValueMini}>{appliedJobs.size}</span>
+              </div>
+            </div>
+            <div className={styles.statCardMini}>
+              <span className={styles.statIconLine}>🎯</span>
+              <div className={styles.statRow}>
+                <span className={styles.statLabelMini}>Match Score</span>
+                <span className={styles.statValueMini}>{atsData.score}%</span>
+              </div>
+            </div>
+            <div className={styles.statCardMini}>
+              <span className={styles.statIconLine}>⚡</span>
+              <div className={styles.statRow}>
+                <span className={styles.statLabelMini}>Status</span>
+                <span className={styles.statStatusMini}>{atsData.status === 'No Profile' ? 'Offline' : 'Active'}</span>
+              </div>
+            </div>
           </div>
 
-          {loading ? (
-             <div className={styles.loadingContainer}>
-               <div className={styles.loadingSpinner}></div>
-               <p>AI is scanning LinkedIn, Indeed, and Jooble for your perfect matches...</p>
-             </div>
-          ) : (
-             <div className={styles.jobList}>
-               {jobs.map((job) => (
-                 <div key={job.id} className={styles.jobCard}>
-                    <div className={styles.jobMain}>
-                      <h3 className={styles.jobTitle}>{job.title}</h3>
-                      <p className={styles.jobCompany}>{job.company} • {job.location}</p>
-                      <p className={styles.jobDesc}>{job.description}</p>
-                      <div className={styles.jobTags}>
-                         <span className={styles.jobTag}>{job.posted}</span>
-                      </div>
-                    </div>
-                    <div className={styles.jobRight}>
-                      <div className={styles.jobMatch}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
-                        {job.matchScore}% Match
-                      </div>
-                      <button 
-                         className={styles.applyBtn}
-                         onClick={() => handleAutoApply(job)}
-                         disabled={appliedJobs.has(job.id) || applyingTo === job.id || job.matchScore < 80}
-                         style={{ 
-                            ...((appliedJobs.has(job.id) || applyingTo === job.id) ? { background: 'var(--success)', opacity: 0.8, cursor: 'not-allowed' } : {}),
-                            ...(job.matchScore < 80 ? { background: 'transparent', border: '1px solid var(--foreground)', opacity: 0.5, cursor: 'not-allowed' } : {})
-                         }}
-                      >
-                         {job.matchScore < 80 ? 'Low Match' : (appliedJobs.has(job.id) ? 'Applied ✓' : (applyingTo === job.id ? 'Sending... ⏳' : 'Auto Apply ⚡'))}
-                      </button>
-                    </div>
-                 </div>
-               ))}
-               {jobs.length === 0 && <p style={{color: 'var(--foreground)'}}>No matches found at the moment. Update your resume to trigger a new search.</p>}
-             </div>
-          )}
-      </section>
+          {/* ATS SCORE WIDGET */}
+          <section className={styles.atsSection}>
+            <div className={styles.atsLeft}>
+              <div className={styles.atsCircleContainer}>
+                <svg viewBox="0 0 100 100" style={{width: '100%', height: '100%'}}>
+                  <circle cx="50" cy="50" r="45" className={styles.atsCircleBg} />
+                  <circle cx="50" cy="50" r="45" className={styles.atsCircleProgress} style={{strokeDasharray: '283', strokeDashoffset: strokeDashoffset.toString()}} />
+                </svg>
+                <div className={styles.atsScoreText}>
+                  <span className={styles.atsScoreValue}>{atsData.score}</span>
+                  <span className={styles.atsScoreLabel}>/ 100</span>
+                </div>
+              </div>
+              <div className={styles.atsStatus}>{atsData.status}</div>
+            </div>
+            <div className={styles.atsRight}>
+              <h3 style={{fontSize: '1.25rem', marginBottom: '0.5rem', fontWeight: 800}}>Your Resume Strength</h3>
+              <p style={{fontSize: '0.9rem', color: 'var(--foreground)', opacity: 0.8, marginBottom: '1.5rem', lineHeight: 1.5}}>{atsData.message}</p>
+              {atsData.missing.length > 0 && (
+                <ul className={styles.atsImprovements}>
+                  {atsData.missing.map((msg, i) => (
+                    <li key={i}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>
+                      {msg}
+                    </li>
+                  ))}
+                </ul>
+              )}
+              <button className={styles.improveBtn} onClick={() => window.location.href='/dashboard/resume'}>Improve Resume with AI</button>
+            </div>
+          </section>
+
+          <section className={styles.section} style={{ background: 'rgba(99, 102, 241, 0.05)', padding: '2rem', borderRadius: '20px', border: '1px dashed var(--primary)' }}>
+            <h2 style={{ fontSize: '1.25rem', marginBottom: '0.5rem', color: 'var(--foreground)' }}>📧 Background Apply</h2>
+            <p style={{ marginBottom: '1.5rem', fontSize: '0.9rem', color: 'var(--foreground)', opacity: 0.8, lineHeight: 1.6 }}>
+              Test exact professional draft targeting {user.email || 'your email'}!
+            </p>
+            <button 
+              className={styles.applyBtn} 
+              style={{ width: '100%', padding: '0.875rem' }}
+              onClick={async () => {
+                const res = await fetch('/api/send-application', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  body: JSON.stringify({
+                    toEmail: user.email || 'swapnildambhare100@gmail.com',
+                    jobTitle: 'Software Engineer',
+                    company: 'Top Company',
+                    applicantName: user.name,
+                    applicantEmail: user.email,
+                    matchScore: 92
+                  })
+                });
+                const data = await res.json();
+                if (data.draft) {
+                  const w = window.open('', '_blank');
+                  if (w) {
+                    w.document.write(data.draft);
+                    w.document.title = "Application Draft Preview";
+                    w.document.close();
+                  }
+                }
+              }}
+            >
+              Generate Draft
+            </button>
+          </section>
+        </div>
+      </div>
+
+      {toast && (
+        <Toast 
+          message={toast.message} 
+          type={toast.type} 
+          onClose={() => setToast(null)} 
+        />
+      )}
     </>
   );
 }

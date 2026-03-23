@@ -14,6 +14,17 @@
   flex-direction: column;
   padding: 2.5rem 1.5rem;
   z-index: 10;
+  box-shadow: 10px 0 30px rgba(0,0,0,0.02);
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0; height: 150px;
+  background: linear-gradient(180deg, rgba(139, 92, 246, 0.05) 0%, transparent 100%);
+  z-index: -1;
 }
 
 .brandLink {
@@ -74,9 +85,11 @@
 }
 
 .navItemActive {
-  background: rgba(139, 92, 246, 0.1);
+  background: linear-gradient(90deg, rgba(139, 92, 246, 0.15), rgba(139, 92, 246, 0.05));
   color: var(--primary);
-  border: 1px solid rgba(139, 92, 246, 0.2);
+  border: 1px solid rgba(139, 92, 246, 0.3);
+  box-shadow: 0 4px 15px rgba(139, 92, 246, 0.1);
+  transform: translateX(4px);
 }
 
 .navBadge {
@@ -86,6 +99,25 @@
   border-radius: 999px;
   font-size: 0.75rem;
   font-weight: 700;
+}
+
+.navLogout, .logoutBtn {
+  padding: 1rem 1.25rem;
+  border-radius: 10px;
+  font-weight: 600;
+  transition: all 0.2s;
+  text-decoration: none;
+  font-size: 0.95rem;
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+.logoutBtn:hover {
+  background: rgba(255, 68, 68, 0.1) !important;
+  transform: translateX(4px);
 }
 
 .creditsSection {
@@ -135,9 +167,28 @@
 /* MAIN CONTENT & BEAUTIFUL BACKGROUND */
 .mainContent {
   flex: 1;
-  padding: 3rem 4rem;
+  padding: 2rem 3rem;
   overflow-y: auto;
   position: relative;
+}
+
+.dashboardGrid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 340px;
+  gap: 2rem;
+  align-items: start;
+}
+
+.middleColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.rightColumn {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
 }
 
 .dashboardBg {
@@ -172,45 +223,102 @@
   z-index: -1;
 }
 
-/* CANDIDATE HEADER (NEW) */
-.candidateHeader {
-  display: flex;
-  align-items: center;
-  gap: 2rem;
-  margin-bottom: 4rem;
-  background: rgba(255, 255, 255, 0.02);
-  backdrop-filter: blur(10px);
-  border: 1px solid var(--card-border);
-  padding: 2rem;
-  border-radius: 20px;
-  box-shadow: 0 10px 40px rgba(0,0,0,0.05);
+.topSearchWrapper {
+  width: 100%;
+  margin-bottom: 2rem;
+  animation: slideDown 0.4s ease-out;
 }
 
-.candidateAvatarLarge {
-  width: 90px;
-  height: 90px;
+/* SIDEBAR REORG */
+.sidebarHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 0.75rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+}
+
+.candidateAvatarSmall {
+  width: 36px;
+  height: 36px;
   border-radius: 50%;
   background: linear-gradient(135deg, var(--primary), var(--secondary));
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 2.5rem;
+  font-size: 1rem;
   font-weight: 800;
-  border: 4px solid var(--background);
-  box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
 }
 
-.candidateInfo {
+.candidateInfoMini {
   flex: 1;
 }
 
-.candidateInfo h1 {
-  font-size: 2.2rem;
+.editProfileIcon {
+  font-size: 1.1rem;
+  text-decoration: none;
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+
+.editProfileIcon:hover {
+  opacity: 1;
+}
+
+.sidebarStats {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.statCardMini {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 0.75rem 1rem;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  transition: transform 0.2s;
+}
+
+.statCardMini:hover {
+  border-color: var(--primary);
+  background: rgba(99, 102, 241, 0.02);
+}
+
+.statIconLine {
+  font-size: 1.1rem;
+}
+
+.statRow {
+  flex: 1;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.statLabelMini {
+  font-size: 0.8rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  font-weight: 600;
+}
+
+.statValueMini {
+  font-size: 0.95rem;
   font-weight: 800;
   color: var(--foreground);
-  margin-bottom: 0.5rem;
-  letter-spacing: -0.02em;
+}
+
+.statStatusMini {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--success);
 }
 
 .candidateRole {
@@ -272,24 +380,26 @@
   border-color: var(--primary);
 }
 
-/* STATS GRID */
+/* STATS GRID - More Condensed */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-  gap: 1.5rem;
-  margin-bottom: 5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
 }
 
 .statCard {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  padding: 1.5rem;
-  border-radius: 16px;
+  padding: 1rem;
+  border-radius: 12px;
   display: flex;
-  align-items: center;
-  gap: 1.5rem;
+  flex-direction: column; /* Stacked layout for top-right icon */
+  position: relative;
   transition: transform 0.2s;
   box-shadow: 0 4px 15px rgba(0,0,0,0.02);
+  min-height: 80px;
+  justify-content: center;
 }
 
 .statCard:hover {
@@ -297,15 +407,18 @@
   border-color: rgba(139, 92, 246, 0.3);
 }
 
-.statIcon {
-  width: 50px;
-  height: 50px;
+.statIconMini {
+  position: absolute;
+  top: 0.75rem;
+  right: 0.75rem;
+  width: 24px;
+  height: 24px;
   background: rgba(139, 92, 246, 0.1);
-  border-radius: 12px;
+  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1.5rem;
+  font-size: 1rem;
 }
 
 .statLabel {
@@ -317,7 +430,7 @@
 }
 
 .statValue, .statValueActive {
-  font-size: 1.8rem;
+  font-size: 1.5rem;
   font-weight: 800;
   color: var(--foreground);
   line-height: 1;
@@ -336,7 +449,7 @@
 }
 
 .section h2 {
-  font-size: 1.8rem;
+  font-size: 1.4rem;
   font-weight: 800;
   color: var(--foreground);
   display: flex;
@@ -378,8 +491,8 @@
 .jobCard {
   background: var(--card-bg);
   border: 1px solid var(--card-border);
-  padding: 2rem;
-  border-radius: 16px;
+  padding: 1.5rem;
+  border-radius: 14px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
@@ -399,7 +512,7 @@
 }
 
 .jobTitle {
-  font-size: 1.3rem;
+  font-size: 1.15rem;
   font-weight: 700;
   margin-bottom: 0.5rem;
   color: var(--foreground);
@@ -413,7 +526,7 @@
 }
 
 .jobDesc {
-  font-size: 0.95rem;
+  font-size: 0.85rem;
   color: var(--foreground);
   opacity: 0.7;
   line-height: 1.6;
@@ -458,10 +571,10 @@
   background: linear-gradient(90deg, #3b82f6, #10b981);
   color: #fff;
   border: none;
-  padding: 0.875rem 2rem;
-  border-radius: 10px;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
   font-weight: 700;
-  font-size: 1.05rem;
+  font-size: 0.95rem;
   cursor: pointer;
   transition: all 0.2s;
   box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
@@ -495,4 +608,279 @@
 
 @keyframes spin {
   to { transform: rotate(360deg); }
+}
+
+/* ATS SCORE SECTION - Miniaturized */
+.atsSection {
+  display: flex;
+  flex-direction: column;
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  border-radius: 16px;
+  padding: 1.25rem;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.03);
+  position: relative;
+  overflow: hidden;
+}
+
+.atsSection::before {
+  content: '';
+  position: absolute;
+  top: 0; right: 0; left: 0; height: 3px;
+  background: linear-gradient(90deg, var(--success), var(--primary));
+}
+
+.atsLeft {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-bottom: 1px solid var(--card-border);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.atsCircleContainer {
+  position: relative;
+  width: 60px;
+  height: 60px;
+  flex-shrink: 0;
+}
+
+.atsCircleBg {
+  fill: none;
+  stroke: var(--card-border);
+  stroke-width: 6;
+}
+
+.atsCircleProgress {
+  fill: none;
+  stroke: var(--success);
+  stroke-width: 6;
+  stroke-linecap: round;
+  transform: rotate(-90deg);
+  transform-origin: 50% 50%;
+  transition: stroke-dashoffset 1s ease-out;
+}
+
+.atsScoreText {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.atsScoreValue {
+  font-size: 1.2rem;
+  font-weight: 900;
+  color: var(--foreground);
+  line-height: 1;
+}
+
+.atsScoreLabel {
+  display: none; /* Hide /100 in mini mode */
+}
+
+.atsStatus {
+  background: rgba(16, 185, 129, 0.1);
+  color: var(--success);
+  padding: 0.3rem 0.75rem;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.8rem;
+  border: 1px solid rgba(16, 185, 129, 0.2);
+}
+
+.atsRight {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.atsRight h3 {
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--foreground);
+  margin-bottom: 0.4rem;
+}
+
+.atsRight p {
+  color: var(--foreground);
+  opacity: 0.7;
+  line-height: 1.5;
+  margin-bottom: 1rem;
+  font-size: 0.85rem;
+}
+
+.atsImprovements {
+  list-style: none;
+  padding: 0;
+  margin-bottom: 1.5rem;
+}
+
+.atsImprovements li {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+  color: var(--foreground);
+  font-weight: 500;
+  font-size: 0.85rem;
+}
+
+.atsImprovements li svg {
+  color: var(--primary);
+  opacity: 0.8;
+}
+
+.improveBtn {
+  width: 100%;
+  background: var(--foreground);
+  color: var(--background);
+  padding: 0.875rem 2rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 1rem;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: center;
+}
+
+.improveBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* JOB DETAILS EXPANSION */
+.jobCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 1.5rem;
+  border-radius: 14px;
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+}
+
+.jobCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.jobExpandedContent {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 1px dashed var(--card-border);
+  animation: slideDown 0.3s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.jobDetailGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.jobDetailSection h4 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 1rem;
+}
+
+.jobDetailSection p, .jobDetailSection li {
+  color: var(--foreground);
+  opacity: 0.8;
+  line-height: 1.7;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
+}
+
+.jobDetailSection ul {
+  padding-left: 1.2rem;
+}
+
+.jobDetailSidebar {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+}
+
+.jobDetailSidebarItem {
+  margin-bottom: 1.2rem;
+}
+
+.jobDetailSidebarItem:last-child {
+  margin-bottom: 0;
+}
+
+.jobDetailSidebarLabel {
+  font-size: 0.8rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  font-weight: 600;
+  margin-bottom: 0.3rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.jobDetailSidebarValue {
+  font-size: 1rem;
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.jobActions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.btnSecondaryAction {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--card-border);
+  padding: 0.875rem 1.5rem;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnSecondaryAction:hover {
+  background: var(--card-bg);
+  border-color: var(--primary);
+}
+
+.seeMoreBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.95rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+  margin-top: 1rem;
+  transition: all 0.2s;
+}
+
+.seeMoreBtn:hover {
+  text-decoration: underline;
 }

@@ -16,11 +16,9 @@ export default function ResumePage() {
   const [file, setFile] = useState<File | null>(null);
   const [isParsing, setIsParsing] = useState(false);
   const [parsedData, setParsedData] = useState<any>(null);
-  
-  // Track all uploaded resumes
   const [resumeHistory, setResumeHistory] = useState<ResumeHistoryItem[]>([]);
+  const [lastUploadedFileName, setLastUploadedFileName] = useState<string>('');
 
-  // Load existing profile from store on page mount
   useEffect(() => {
     const stored = loadProfile();
     if (stored) setParsedData(stored);
@@ -30,43 +28,32 @@ export default function ResumePage() {
     if (e.target.files && e.target.files[0]) {
       const selectedFile = e.target.files[0];
       setFile(selectedFile);
+      setLastUploadedFileName(selectedFile.name);
       await handleUpload(selectedFile);
     }
   };
 
   const handleUpload = async (uploadFile: File) => {
     if (!uploadFile) return;
-    
     setIsParsing(true);
     const formData = new FormData();
     formData.append('resume', uploadFile);
 
     try {
-      const response = await fetch('/api/parse-resume', {
-        method: 'POST',
-        body: formData,
-      });
-
-      // Safely catch Next.js HTML error pages instead of blind JSON crashing
+      const response = await fetch('/api/parse-resume', { method: 'POST', body: formData });
       const rawText = await response.text();
       let result;
       try {
         result = JSON.parse(rawText);
-      } catch (jsonError) {
-        console.error("SERVER CRASH RAW HTML:", rawText);
-        throw new Error(`Server crashed heavily. Response was not JSON. Status: ${response.status}. Check browser/server console for details!`);
+      } catch (e) {
+        throw new Error("Parsing failed. Check server console.");
       }
       
-      if (!response.ok) {
-        throw new Error(result.error || 'Server responded with an error');
-      }
+      if (!response.ok) throw new Error(result.error || 'Server error');
 
       if (result.data) {
-        // Save to global profile store (shared across all dashboard pages)
         const savedProfile = saveProfile(result.data);
         setParsedData(savedProfile);
-        
-        // Add to history
         const newItem: ResumeHistoryItem = {
           id: Math.random().toString(36).substr(2, 9),
           name: uploadFile.name,
@@ -74,13 +61,10 @@ export default function ResumePage() {
           parsedData: savedProfile
         };
         setResumeHistory(prev => [newItem, ...prev]);
-        setFile(null); // Clear active file after success
-      } else {
-        alert('Parsing failed: No data returned.');
+        setFile(null);
       }
     } catch (error: any) {
-      console.error(error);
-      alert(error.message || 'An error occurred during parsing.');
+      alert(error.message);
     } finally {
       setIsParsing(false);
     }
@@ -89,89 +73,90 @@ export default function ResumePage() {
   return (
     <div className={styles.container}>
       <header className={styles.header}>
-        <h1>My Resume</h1>
-        <p>Upload your latest resume (PDF or DOCX) to help AI find the best jobs for you.</p>
+        <h1>My Resumes</h1>
+        <p>Your centralized resume vault for AI matching and applications.</p>
       </header>
 
       <section className={styles.uploadSection}>
         <div className={styles.dropzone}>
           <div className={styles.uploadIcon}>📄</div>
-          <h3>{file ? file.name : "Drag & Drop your resume here"}</h3>
-          <p>Supports PDF, DOCX (Max 5MB)</p>
+          <h3>{isParsing ? 'Processing AI Magic...' : (file ? file.name : "Upload new version")}</h3>
+          <p>AI will automatically read keywords, skills, and your recent position.</p>
           <div style={{ display: 'flex', gap: '1rem', justifyContent: 'center', marginTop: '1rem' }}>
-            <label className={styles.browseBtn} style={{ opacity: isParsing ? 0.6 : 1, pointerEvents: isParsing ? 'none' : 'auto', background: isParsing ? '#a855f7' : '' }}>
-              {isParsing ? 'Scanning AI...' : 'Browse Files'}
-              <input type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document" hidden onChange={handleFileChange} />
+            <label className={styles.browseBtn} style={{ opacity: isParsing ? 0.6 : 1, pointerEvents: isParsing ? 'none' : 'auto' }}>
+              {isParsing ? 'Reading Keywords...' : 'Browse Resume'}
+              <input type="file" accept=".pdf,.docx" hidden onChange={handleFileChange} />
             </label>
           </div>
         </div>
       </section>
 
-      {/* Active Parsed Profile (Last Uploaded) */}
+      {/* NEW: Recently Uploaded Indicator */}
+      {lastUploadedFileName && !isParsing && (
+        <div style={{ marginBottom: '2rem', textAlign: 'center', animation: 'fadeIn 0.5s ease-out' }}>
+           <span style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#10b981', padding: '0.5rem 1rem', borderRadius: '50px', fontSize: '0.9rem', fontWeight: 600 }}>
+             ✅ Successfully processed: {lastUploadedFileName}
+           </span>
+        </div>
+      )}
+
       {parsedData && (
         <section className={styles.parsedDataSection}>
-          <h2>Extracted Profile Insight ✅</h2>
           <div className={styles.profileCard}>
             <div className={styles.profileHeader}>
               <div className={styles.avatar}>
-                {(parsedData.personalInfo?.name || parsedData.name || '??').substring(0, 2).toUpperCase()}
+                {(parsedData.personalInfo?.name || 'User').substring(0, 2).toUpperCase()}
+              </div>
+              <div style={{ flex: 1 }}>
+                <h3>{parsedData.personalInfo?.name || 'Active Resume'}</h3>
+                <p className={styles.domain}>
+                  {parsedData.recentPosition || parsedData.targetRoles?.[0] || 'Professional'} &bull; {parsedData.totalExperience || 0} Years Exp
+                </p>
+                <p style={{ fontSize: '0.85rem', opacity: 0.6, marginTop: '4px' }}>
+                  AI Detected: {parsedData.skills?.length || 0} Key Keywords
+                </p>
               </div>
               <div>
-                <h3>{parsedData.personalInfo?.name || parsedData.name || 'Unknown Name'}</h3>
-                <p className={styles.domain}>
-                  {parsedData.targetRoles?.[0] || 'Unknown Role'} &bull; {parsedData.totalExperience || 0} Years Exp
-                </p>
-                {parsedData.personalInfo?.email && (
-                  <p style={{ fontSize: '0.85rem', opacity: 0.7 }}>{parsedData.personalInfo.email}</p>
-                )}
+                 <button className={styles.downloadBtn} onClick={() => alert('Downloading your original file...')}>
+                    📥 Download
+                 </button>
               </div>
             </div>
             
             <div className={styles.skillsSection}>
-              <h4>Top Skills Detected</h4>
+              <h4>Skills Radar (AI Read)</h4>
               <div className={styles.skillsList}>
-                {parsedData.skills && parsedData.skills.length > 0 ? parsedData.skills.map((skill: string, idx: number) => (
+                {parsedData.skills?.map((skill: string, idx: number) => (
                   <span key={idx} className={styles.skillBadge}>{skill}</span>
-                )) : <span>No skills detected.</span>}
+                ))}
               </div>
             </div>
 
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexWrap: 'wrap' }}>
-              <Link href="/dashboard/jobs" className={styles.editBtn} style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center', background: 'var(--primary)', color: 'white' }}>
-                Find Matching Jobs ⚡
-              </Link>
-              <Link href="/dashboard/profile" className={styles.editBtn} style={{ textDecoration: 'none', display: 'inline-block', textAlign: 'center' }}>
-                Edit Profile Manually
+            <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem' }}>
+              <Link href="/dashboard/jobs" className={styles.editBtn} style={{ background: 'var(--primary)', color: 'white', border: 'none', textDecoration: 'none', display: 'flex', alignItems: 'center' }}>
+                View Matches ⚡
               </Link>
             </div>
           </div>
         </section>
       )}
 
-      {/* Uploaded Resumes History Window */}
       {resumeHistory.length > 0 && (
-        <section className="glass-panel" style={{ marginTop: '2rem', padding: '1.5rem', borderRadius: '16px' }}>
-          <h2 style={{ fontSize: '1.4rem', marginBottom: '1rem', color: 'var(--primary)', borderBottom: '1px solid var(--card-border)', paddingBottom: '0.5rem' }}>
-            Uploaded Resumes History
-          </h2>
+        <section style={{ marginTop: '2rem' }}>
+          <h2 style={{ fontSize: '1.2rem', marginBottom: '1rem' }}>Version History</h2>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
             {resumeHistory.map(item => (
-              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'var(--background)', borderRadius: '8px', border: '1px solid var(--card-border)' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                  <div style={{ fontSize: '1.5rem' }}>📄</div>
-                  <div>
-                    <div style={{ fontWeight: '600', color: 'var(--foreground)' }}>{item.name}</div>
-                    <div style={{ fontSize: '0.85rem', opacity: 0.7 }}>Uploaded: {item.date}</div>
-                  </div>
-                </div>
+              <div key={item.id} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', background: 'var(--card-bg)', borderRadius: '12px', border: '1px solid var(--card-border)' }}>
                 <div>
-                  <button 
-                    style={{ background: 'transparent', border: '1px solid var(--primary)', color: 'var(--primary)', padding: '0.4rem 1rem', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}
-                    onClick={() => setParsedData(item.parsedData)}
-                  >
-                    Load Profile
-                  </button>
+                  <div style={{ fontWeight: '600' }}>{item.name}</div>
+                  <div style={{ fontSize: '0.8rem', opacity: 0.6 }}>{item.date}</div>
                 </div>
+                <button 
+                  className={styles.editBtn}
+                  onClick={() => setParsedData(item.parsedData)}
+                >
+                  Apply to Profile
+                </button>
               </div>
             ))}
           </div>

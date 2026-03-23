@@ -1,0 +1,89 @@
+.container {
+  min-height: 100vh;
+  background: #f8fafc;
+}
+
+.main {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 8rem 2rem;
+}
+
+.hero {
+  text-align: center;
+  margin-bottom: 5rem;
+}
+
+.hero h1 {
+  font-size: 3rem;
+  font-weight: 900;
+  margin-bottom: 1rem;
+  color: #1e293b;
+}
+
+.hero p {
+  font-size: 1.25rem;
+  color: #64748b;
+}
+
+.section {
+  margin-bottom: 5rem;
+}
+
+.section h2 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin-bottom: 2rem;
+  color: #1e293b;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 2rem;
+}
+
+.card {
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  border: 1px solid #e2e8f0;
+  position: relative;
+  transition: transform 0.3s;
+}
+
+.card:hover {
+  transform: translateY(-5px);
+  border-color: #6366f1;
+}
+
+.stepNum {
+  position: absolute;
+  top: -15px;
+  left: 20px;
+  width: 40px;
+  height: 40px;
+  background: #6366f1;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 900;
+}
+
+.proBox {
+  background: linear-gradient(135deg, #1e293b, #0f172a);
+  color: white;
+  padding: 3rem;
+  border-radius: 24px;
+  font-size: 1.25rem;
+  line-height: 1.6;
+}
+
+.proBox strong {
+  color: #4ade80;
+}

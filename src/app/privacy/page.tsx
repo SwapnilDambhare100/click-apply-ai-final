@@ -1,49 +1,47 @@
-import Navbar from '../../components/Navbar';
-import Footer from '../../components/Footer';
-import styles from './policy.module.css';
+import Link from 'next/link';
 
-export default function PrivacyPolicy() {
+export default function PrivacyPage() {
   return (
-    <>
-      <Navbar />
-      <main className={styles.container}>
-        <div className={styles.content}>
-          <h1>Privacy Policy</h1>
-          <p className={styles.lastUpdated}>Last updated: October 2023</p>
-          
-          <section>
-            <h2>1. Introduction</h2>
-            <p>Welcome to ClickApplyAI. We are committed to protecting your personal information and your right to privacy.</p>
-          </section>
+    <div style={{ maxWidth: '800px', margin: '6rem auto', padding: '0 2rem', lineHeight: '1.8' }}>
+      <h1 style={{ fontSize: '2.5rem', fontWeight: 800, marginBottom: '2rem' }}>Privacy Policy</h1>
+      <p style={{ opacity: 0.7, marginBottom: '2rem' }}>Last Updated: March 24, 2026</p>
 
-          <section>
-            <h2>2. Information We Collect</h2>
-            <p>We automatically collect certain information when you visit, use, or navigate the platform. This includes:</p>
-            <ul>
-              <li>Personal and contact data (Name, Email)</li>
-              <li>Resume data (Experience, Skills, Domain) extracted by our AI</li>
-              <li>Job application history and preferences</li>
-            </ul>
-          </section>
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>1. Introduction</h2>
+        <p>Welcome to ClickApplyAI. We value your privacy and are committed to protecting your personal data. This Privacy Policy explains how we collect, use, and safeguard your information when you use our autonomous job application platform.</p>
+      </section>
 
-          <section>
-            <h2>3. How We Use Your Data</h2>
-            <p>We use the information we collect or receive to:</p>
-            <ul>
-              <li>Provide, operate, and maintain our platform</li>
-              <li>Improve, personalize, and expand our services</li>
-              <li>Understand and analyze how you use our automated job apply agent</li>
-              <li>Communicate with you for customer service and updates</li>
-            </ul>
-          </section>
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>2. Information We Collect</h2>
+        <p>To provide our AI-driven services, we may collect:</p>
+        <ul style={{ paddingLeft: '1.5rem' }}>
+          <li><strong>Personal Details:</strong> Name, email, phone number, and location.</li>
+          <li><strong>Resume Data:</strong> Professional experience, education, skills, and contact information extracted from your uploaded documents.</li>
+          <li><strong>Job Preferences:</strong> Search keywords, target roles, and application history.</li>
+        </ul>
+      </section>
 
-          <section>
-            <h2>4. AI Processing</h2>
-            <p>Your resume data is processed by our AI algorithms exclusively to match you with jobs and generate application emails. We do not sell your resume data to third parties.</p>
-          </section>
-        </div>
-      </main>
-      <Footer />
-    </>
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>3. How We Use Your Information</h2>
+        <p>Your data is used strictly for:</p>
+        <ul style={{ paddingLeft: '1.5rem' }}>
+          <li>Matching your profile with relevant job opportunities.</li>
+          <li>Automating job applications to recruiters on your behalf.</li>
+          <li>Improving our AI algorithms for better results.</li>
+        </ul>
+      </section>
+
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>4. Data Security</h2>
+        <p>We implement industry-standard security measures to protect your data from unauthorized access, alteration, or disclosure. We do not sell your personal information to third parties.</p>
+      </section>
+
+      <section style={{ marginBottom: '2.5rem' }}>
+        <h2 style={{ fontSize: '1.5rem', fontWeight: 700, marginBottom: '1rem' }}>5. Contact Us</h2>
+        <p>If you have any questions about this Privacy Policy, please contact us at <a href="mailto:admin@clickapplyai.com" style={{ color: 'var(--primary)', fontWeight: 600 }}>admin@clickapplyai.com</a>.</p>
+      </section>
+
+      <Link href="/" style={{ color: 'var(--primary)', textDecoration: 'none', fontWeight: 700 }}>← Back to Home</Link>
+    </div>
   );
 }

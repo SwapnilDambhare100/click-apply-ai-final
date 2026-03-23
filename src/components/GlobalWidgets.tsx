@@ -60,16 +60,16 @@ export default function GlobalWidgets() {
       let botResponse = "I'm still learning, but I'm here to help! Try exploring the Dashboard or the AI Tools dropdown at the top.";
       const lowerInput = userMsg.toLowerCase();
 
-      if (lowerInput.includes('price') || lowerInput.includes('cost') || lowerInput.includes('plan') || lowerInput.includes('money')) {
-        botResponse = "We have a Free Basic plan, a Starter plan at ₹9, a Pro plan at ₹25, and an Unlimited plan at ₹99. You can view all features on the Pricing page!";
-      } else if (lowerInput.includes('resume') || lowerInput.includes('cv') || lowerInput.includes('upload') || lowerInput.includes('parse')) {
-        botResponse = "You can instantly upload and parse your resume by going to 'My Resume' in your Dashboard! Our AI perfectly extracts your skills and experience.";
-      } else if (lowerInput.includes('apply') || lowerInput.includes('job') || lowerInput.includes('work') || lowerInput.includes('interview')) {
-        botResponse = "To apply for jobs, head over to the 'Recommended Jobs' section inside the Dashboard. Just click 'Quick Apply' on any matched job! We are legally live-connected to Adzuna's job feed.";
-      } else if (lowerInput.includes('hello') || lowerInput.includes('hi') || lowerInput.includes('hey')) {
-        botResponse = "Hello! How can I accelerate your job hunt and career today?";
-      } else if (lowerInput.includes('who are you') || lowerInput.includes('what are you')) {
-        botResponse = "I am the ClickApplyAI Smart Assistant! I'm here to guide you through automating your job applications with next-gen AI.";
+      if (lowerInput.includes('hello') || lowerInput.includes('hi ') || lowerInput === 'hi' || lowerInput.includes('hey')) {
+        botResponse = "Hi! 👋 How can I help you today? You can ask about our 'Direct-Hit' email automation, check out our Live Simulation, or read the User Guide!";
+      } else if (lowerInput.includes('guide') || lowerInput.includes('how to') || lowerInput.includes('help')) {
+        botResponse = "To get started, check out our 'User Guide' in the AI Tools dropdown! 📖 It covers everything from setting up your profile to launching your first agent.";
+      } else if (lowerInput.includes('simulation') || lowerInput.includes('action') || lowerInput.includes('video')) {
+        botResponse = "You can see our AI in action right on the homepage! Look for the 'Live Agent Simulation' section to watch a real-time demo. 🤖📺";
+      } else if (lowerInput.includes('price') || lowerInput.includes('cost') || lowerInput.includes('plan')) {
+        botResponse = "Our plans start at ₹9! Check the Pricing page for details on our Pro and Unlimited Career Agent packages. 💰";
+      } else if (lowerInput.includes('apply') || lowerInput.includes('job') || lowerInput.includes('match')) {
+        botResponse = "Our 'Direct-Hit' engine matches you with the best roles and emails recruiters directly. Just head to your Dashboard to start! 🎯🚀";
       }
 
       setMessages(prev => [...prev, { role: 'bot', text: botResponse }]);

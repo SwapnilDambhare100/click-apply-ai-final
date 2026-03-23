@@ -1,0 +1,502 @@
+/* Premium Resume Builder Styles (Migrated from Dashboard) */
+
+.stepOneHero {
+  text-align: center;
+  padding: 4rem 1rem;
+}
+
+.stepOneHero h1 {
+  font-size: 3rem;
+  font-weight: 800;
+  margin-bottom: 1.5rem;
+  background: linear-gradient(90deg, #1f2937, #4f46e5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.stepOneHero p {
+  font-size: 1.25rem;
+  opacity: 0.7;
+  max-width: 700px;
+  margin: 0 auto 3rem;
+  line-height: 1.6;
+}
+
+.heroActions {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-bottom: 4rem;
+}
+
+.primaryBtn {
+  background: #2563eb;
+  color: white !important;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.2s;
+  display: inline-block;
+}
+
+.primaryBtn:hover { transform: translateY(-2px); }
+
+.secondaryBtn {
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  color: #374151;
+  padding: 1rem 2.5rem;
+  border-radius: 50px;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.previewImage {
+  margin-top: 2rem;
+  border-radius: 20px;
+  overflow: hidden;
+  box-shadow: 0 20px 50px rgba(0,0,0,0.1);
+}
+
+.previewImage img {
+  width: 100%;
+  max-width: 800px;
+  display: block;
+  margin: 0 auto;
+}
+
+/* Step 2: How it works */
+.howItWorksContainer {
+  max-width: 1000px;
+  margin: 0 auto;
+  padding: 2rem;
+}
+
+.howItWorksHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.logoRow {
+  font-weight: 800;
+  font-size: 1.5rem;
+  margin-bottom: 2rem;
+  color: #4f46e5;
+}
+
+.howItWorksHeader h1 {
+  font-size: 2.5rem;
+  font-weight: 800;
+}
+
+.stepsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 2rem;
+  margin-bottom: 4rem;
+}
+
+.stepCard {
+  background: #fff;
+  border: 1px solid #f3f4f6;
+  padding: 2.5rem;
+  border-radius: 20px;
+  text-align: left;
+  border-top: 4px solid #10b981;
+  box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1);
+}
+
+.stepIcon {
+  font-size: 2.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.stepCard h3 {
+  font-size: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.stepCard ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.stepCard li {
+  margin-bottom: 0.75rem;
+  opacity: 0.8;
+  font-size: 1rem;
+}
+
+.continueRow {
+  text-align: center;
+}
+
+.continueBtn {
+  background: #2563eb;
+  color: white;
+  padding: 1rem 4rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1.1rem;
+  border: none;
+  cursor: pointer;
+  margin-bottom: 1rem;
+}
+
+.termsLine {
+  font-size: 0.85rem;
+  opacity: 0.5;
+}
+
+/* Step 3: Templates */
+.templateContainer {
+  min-height: 100vh;
+  padding: 4rem 2rem;
+  background-color: #f8fafc;
+  background-image: 
+    linear-gradient(rgba(0, 0, 255, 0.03) 1.5px, transparent 1.5px),
+    linear-gradient(90deg, rgba(0, 0, 255, 0.03) 1.5px, transparent 1.5px);
+  background-size: 40px 40px;
+  position: relative;
+}
+
+.templateHeader {
+  text-align: center;
+  margin-bottom: 4rem;
+}
+
+.templateHeader h1 {
+  font-size: 3.5rem;
+  font-weight: 850;
+  color: #0f172a;
+  margin-bottom: 1rem;
+  letter-spacing: -0.02em;
+}
+
+.templateHeader p {
+  font-size: 1.25rem;
+  color: #64748b;
+  font-weight: 500;
+}
+
+.templateGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2.5rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.templateCard {
+  background: white;
+  border-radius: 24px;
+  overflow: hidden;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.templateCard:hover {
+  transform: translateY(-8px);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.templatePreview {
+  position: relative;
+  aspect-ratio: 3/4;
+  overflow: hidden;
+  background: #f1f5f9;
+}
+
+.templatePreview img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.6s ease;
+}
+
+.templateCard:hover .templatePreview img {
+  transform: scale(1.05);
+}
+
+.recommendedBadgeInside {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  background: rgba(255, 255, 255, 0.95);
+  color: #2563eb;
+  padding: 0.5rem 1rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  backdrop-filter: blur(4px);
+  z-index: 10;
+}
+
+.templateOverlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.3s ease;
+  backdrop-filter: blur(2px);
+}
+
+.templateCard:hover .templateOverlay {
+  opacity: 1;
+}
+
+.chooseTemplateBtn {
+  background: #2563eb;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 50px;
+  font-weight: 700;
+  font-size: 1rem;
+  cursor: pointer;
+  transform: translateY(20px);
+  transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.templateCard:hover .chooseTemplateBtn {
+  transform: translateY(0);
+}
+
+.templateCard h3 {
+  padding: 1.5rem;
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #1e293b;
+}
+
+.floatingSupport {
+  position: fixed;
+  bottom: 2.5rem;
+  right: 2.5rem;
+  background: white;
+  padding: 0.75rem 1.5rem;
+  border-radius: 100px;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.05);
+  cursor: pointer;
+  z-index: 1000;
+  transition: all 0.3s ease;
+}
+
+.floatingSupport:hover {
+  transform: scale(1.05);
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.supportIcon {
+  font-size: 1.25rem;
+}
+
+.supportText {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #334155;
+}
+
+/* Step 4: AI Building Animation */
+.aiBuildLoader {
+  height: min-content;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+  background: #f8fafc;
+}
+
+.aiGlow {
+  position: absolute;
+  width: 600px;
+  height: 600px;
+  background: radial-gradient(circle, rgba(37, 99, 235, 0.1) 0%, transparent 70%);
+  filter: blur(80px);
+  animation: pulse 4s infinite alternate;
+}
+
+.loaderContent {
+  text-align: center;
+  z-index: 10;
+  max-width: 500px;
+}
+
+.aiIcon {
+  font-size: 5rem;
+  margin-bottom: 2rem;
+  animation: float 3s infinite ease-in-out;
+}
+
+.loaderContent h2 {
+  font-size: 2.25rem;
+  font-weight: 850;
+  color: #0f172a;
+  margin-bottom: 2rem;
+  letter-spacing: -0.02em;
+}
+
+.progressBar {
+  width: 100%;
+  height: 12px;
+  background: #e2e8f0;
+  border-radius: 10px;
+  overflow: hidden;
+  margin-bottom: 1.5rem;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, #2563eb, #7c3aed);
+  width: 0%;
+  animation: progressBuild 4s forwards linear;
+}
+
+.loaderContent p {
+  color: #64748b;
+  font-weight: 500;
+  font-size: 1.1rem;
+}
+
+/* Step 4: Final Preview */
+.finalPreviewContainer {
+  display: grid;
+  grid-template-columns: 350px 1fr;
+  height: 100vh;
+  background: #f1f5f9;
+}
+
+.previewSidebar {
+  background: white;
+  padding: 2.5rem;
+  border-right: 1px solid #e2e8f0;
+  display: flex;
+  flex-direction: column;
+  gap: 2.5rem;
+}
+
+.previewSidebar h2 {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: #0f172a;
+}
+
+.sidebarAction label {
+  display: block;
+  font-weight: 700;
+  color: #475569;
+  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+}
+
+.colorRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.colorRow span {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+
+.colorRow span:hover {
+  transform: scale(1.1);
+}
+
+.resumePaper {
+  background: white;
+  width: 800px;
+  min-height: 1050px;
+  margin: 4rem auto;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+  padding: 4rem;
+  position: relative;
+}
+
+.paperHeader {
+  border-bottom: 2px solid #2563eb;
+  padding-bottom: 2rem;
+  margin-bottom: 2.5rem;
+}
+
+.paperHeader h1 {
+  font-size: 2.5rem;
+  font-weight: 850;
+  color: #0f172a;
+}
+
+.paperHeader p {
+  color: #64748b;
+  font-size: 1.1rem;
+  margin-top: 0.5rem;
+}
+
+.paperBody section {
+  margin-bottom: 2.5rem;
+}
+
+.paperBody h3 {
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: #2563eb;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 1rem;
+}
+
+.expItem strong {
+  display: block;
+  font-size: 1.1rem;
+  color: #0f172a;
+}
+
+.expItem span {
+  display: block;
+  color: #64748b;
+  font-size: 0.9rem;
+  margin: 0.25rem 0 0.75rem;
+}
+
+.watermark {
+  position: absolute;
+  bottom: 2rem;
+  right: 4rem;
+  font-size: 0.8rem;
+  color: #cbd5e1;
+  font-weight: 600;
+}
+
+/* Animations */
+@keyframes progressBuild {
+  0% { width: 0%; }
+  100% { width: 100%; }
+}
+
+@keyframes pulse {
+  from { transform: scale(1); opacity: 0.5; }
+  to { transform: scale(1.2); opacity: 0.8; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-15px); }
+}

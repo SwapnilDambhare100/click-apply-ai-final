@@ -8,22 +8,25 @@ datasource db {
 }
 
 model User {
-  id           String    @id @default(uuid())
-  name         String
-  email        String    @unique
-  passwordHash String
-  credits      Int       @default(10)
-  createdAt    DateTime  @default(now())
-  updatedAt    DateTime  @updatedAt
-
-  profile      Profile?
-  applications Application[]
+  id                String        @id @default(uuid())
+  name              String
+  email             String        @unique
+  passwordHash      String
+  credits           Int           @default(10)
+  autoApplyEnabled  Boolean       @default(false)
+  autoApplyKeywords String        @default("")
+  emailNotifications    Boolean   @default(true)
+  maxApplicationsPerDay Int       @default(20)
+  minMatchScore         Int       @default(70)
+  createdAt         DateTime      @default(now())
+  updatedAt         DateTime      @updatedAt
+  applications      Application[]
+  profile           Profile?
 }
 
 model Profile {
   id            String   @id @default(uuid())
   userId        String   @unique
-  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   resumeFileUrl String?
   domain        String?
   experience    Int?
@@ -31,19 +34,25 @@ model Profile {
   extractedText String?
   createdAt     DateTime @default(now())
   updatedAt     DateTime @updatedAt
+  user          User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }
 
 model Job {
-  id             String    @id @default(uuid())
+  id             String        @id @default(uuid())
+  externalId     String?       @unique
   title          String
   company        String
+  location       String?
   description    String
-  requirements   String
+  requirements   String?
   recruiterEmail String?
   source         String?
-  createdAt      DateTime  @default(now())
-  updatedAt      DateTime  @updatedAt
-
+  url            String?
+  postedAt       DateTime?
+  isLive         Boolean       @default(true)
+  matchScore     Int?
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
   applications   Application[]
 }
 
@@ -51,11 +60,10 @@ model Application {
   id          String   @id @default(uuid())
   userId      String
   jobId       String
-  status      String   @default("Applied") // e.g., "Pending", "Applied", "Failed"
+  status      String   @default("Applied")
   dateApplied DateTime @default(now())
-  
-  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
   job         Job      @relation(fields: [jobId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@unique([userId, jobId])
 }

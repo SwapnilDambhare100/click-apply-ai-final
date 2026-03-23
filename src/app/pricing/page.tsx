@@ -4,6 +4,7 @@ import Navbar from '../../components/Navbar';
 import Footer from '../../components/Footer';
 import styles from './pricing.module.css';
 import { useState } from 'react';
+import { addCredits } from '@/lib/creditsStore';
 
 export default function Pricing() {
   const [loading, setLoading] = useState<number | null>(null);
@@ -20,7 +21,16 @@ export default function Pricing() {
       const data = await res.json();
 
       if (data.success) {
-        alert(`Razorpay Checkout Simulator!\nOrder ID: ${data.order.id}\nAmount: ₹${amount}.00\n\n(In production, the Razorpay window would open here)`);
+        let creditsToAdd = 0;
+        if (amount === 9) creditsToAdd = 50;
+        if (amount === 25) creditsToAdd = 100;
+        if (amount === 99) creditsToAdd = 99999; // Represents Unlimited
+
+        alert(`Razorpay Checkout Simulator!\nOrder ID: ${data.order.id}\nAmount: ₹${amount}.00\n\nSuccessfully simulated payment. Added ${creditsToAdd === 99999 ? 'Unlimited' : creditsToAdd} credits to your account!`);
+        
+        addCredits(creditsToAdd);
+        window.dispatchEvent(new Event('storage'));
+        window.location.href = '/dashboard';
       } else {
         alert('Checkout failed.');
       }
@@ -49,23 +59,22 @@ export default function Pricing() {
               <span className={styles.currency}>₹</span>0
             </div>
             <ul className={styles.features}>
-              <li>✓ 10 Free Applications</li>
+              <li>✓ 25 Free Applications</li>
               <li>✓ Basic Resume Parsing</li>
               <li>✓ Manual Application Testing</li>
             </ul>
             <button className={styles.btnSecondary} disabled>Current Plan</button>
           </div>
 
-          {/* Starter Plan */}
+          {/* Growth Plan */}
           <div className={styles.card}>
-            <h3>Starter</h3>
+            <h3>Growth</h3>
             <div className={styles.price}>
               <span className={styles.currency}>₹</span>9
             </div>
             <p className={styles.subtitle}>Supercharge your job hunt</p>
             <ul className={styles.features}>
-              <li>✓ <b>10 AI Points</b></li>
-              <li>✓ <b>20 Auto-Applications</b></li>
+              <li>✓ <b>50 Auto-Applications</b></li>
               <li>✓ Priority AI Job Matching</li>
               <li>✓ Instant Email Dispatch</li>
             </ul>
@@ -85,9 +94,8 @@ export default function Pricing() {
             <div className={styles.price}>
               <span className={styles.currency}>₹</span>25
             </div>
-            <p className={styles.subtitle}>For serious job seekers</p>
+            <p className={styles.subtitle}>Valid for 1 Month</p>
             <ul className={styles.features}>
-              <li>✓ <b>50 AI Points</b></li>
               <li>✓ <b>100 Auto-Applications</b></li>
               <li>✓ Advanced Resume Scoring</li>
               <li>✓ Cover Letter Generator</li>
@@ -107,9 +115,8 @@ export default function Pricing() {
             <div className={styles.price}>
               <span className={styles.currency}>₹</span>99
             </div>
-            <p className={styles.subtitle}>Full Access 30 Days</p>
+            <p className={styles.subtitle}>Valid for 30 Days</p>
             <ul className={styles.features}>
-              <li>✓ <b>Unlimited AI Points</b></li>
               <li>✓ <b>Unlimited Auto-Applies</b></li>
               <li>✓ Dedicated Support Agent</li>
               <li>✓ Auto-Apply to LinkedIn</li>

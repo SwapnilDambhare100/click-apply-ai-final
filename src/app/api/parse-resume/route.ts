@@ -57,7 +57,7 @@ function parseResumeLocally(text: string) {
     personalInfo: { name: name || 'See resume', email, phone },
     skills: skills.length > 0 ? skills : ['Please check resume manually'],
     totalExperience,
-    targetRoles: targetRoles.length > 0 ? targetRoles : ['General Professional'],
+    recentPosition: targetRoles[0] || 'Professional',
   };
 }
 
@@ -116,7 +116,7 @@ export async function POST(req: NextRequest) {
       try {
         const genAI = new GoogleGenerativeAI(apiKey);
         const model = genAI.getGenerativeModel({ model: 'gemini-1.5-flash' });
-        const prompt = `You are an expert HR resume parser. Extract the following from the resume text and return ONLY raw JSON (no markdown, no code fences):\n{\n  "personalInfo": { "name": "...", "email": "...", "phone": "..." },\n  "skills": ["skill1", "skill2"],\n  "totalExperience": <number>,\n  "targetRoles": ["role1", "role2"]\n}\nResume Text:\n"""\n${extractedText.slice(0, 6000)}\n"""`;
+        const prompt = `You are an expert HR resume parser. Extract the following from the resume text and return ONLY raw JSON (no markdown, no code fences):\n{\n  "personalInfo": { "name": "...", "email": "...", "phone": "..." },\n  "skills": ["skill1", "skill2"],\n  "totalExperience": <number>,\n  "targetRoles": ["role1", "role2"],\n  "recentPosition": "Most recent job title found in experience section"\n}\nResume Text:\n"""\n${extractedText.slice(0, 6000)}\n"""`;
 
         const result = await model.generateContent(prompt);
         const responseText = result.response.text().replace(/```json/g, '').replace(/```/g, '').trim();

@@ -59,19 +59,29 @@ export default function HowItWorksVideo() {
 
   const currentStep = SIMULATION_STEPS[stepIndex];
 
+  const handleStart = () => {
+    setStepIndex(0);
+    setIsPlaying(true);
+  };
+
+  const handleExit = () => {
+    setIsPlaying(false);
+    setStepIndex(0);
+  };
+
   return (
     <section className={styles.videoSection} id="how-it-works">
       <div className={styles.header}>
-        <div className={styles.badge}>Live Simulation</div>
+        <div className={styles.badge}>Live Agent Simulation</div>
         <h2>See AI Automation in Action</h2>
-        <p>Watch how our agent applies to 50 jobs in under 2 minutes.</p>
+        <p>Watch how our agent applies to 50 jobs across LinkedIn, Adzuna, and Indeed in under 2 minutes.</p>
       </div>
 
       <div className={styles.videoContainer}>
         {!isPlaying ? (
-          <div className={styles.videoThumbnail} onClick={() => setIsPlaying(true)}>
+          <div className={styles.videoThumbnail} onClick={handleStart}>
             <div className={styles.playButton}>
-              <div className={styles.playIcon}>▶</div>
+              <div className={styles.playIcon} style={{ fontSize: '2.5rem' }}>▶</div>
             </div>
             <div className={styles.thumbnailOverlay}></div>
             <div className={styles.abstractVisual}>
@@ -79,7 +89,7 @@ export default function HowItWorksVideo() {
                <div className={styles.line2}></div>
                <div className={styles.line3}></div>
             </div>
-            <div className={styles.previewText}>Click to Start Simulator</div>
+            <div className={styles.previewText} style={{ fontWeight: 800 }}>CLICK TO START LIVE SIMULATOR</div>
           </div>
         ) : (
           <div className={styles.videoPlayerActive}>
@@ -87,14 +97,16 @@ export default function HowItWorksVideo() {
               {/* Browser Header */}
               <div className={styles.simTopBar}>
                 <div className={styles.windowControls}>
-                  <span></span><span></span><span></span>
+                  <span style={{ background: '#ff5f57' }}></span>
+                  <span style={{ background: '#ffbd2e' }}></span>
+                  <span style={{ background: '#28c940' }}></span>
                 </div>
                 <div className={styles.tabs}>
-                  <div className={styles.tabActive}>LinkedIn Jobs</div>
-                  <div className={styles.tab}>ClickApply Dashboard</div>
+                  <div className={styles.tabActive}>{currentStep.url.split('/')[0]}</div>
+                  <div className={styles.tab}>ClickApply AI Agent</div>
                 </div>
                 <div className={styles.simUrl}>
-                  <span className={styles.lockIcon}>🔒</span>
+                  <span className={styles.lockIcon}>🔒 Secure Agent |</span>
                   {currentStep.url}
                 </div>
               </div>
@@ -102,15 +114,17 @@ export default function HowItWorksVideo() {
               {/* Browser Body */}
               <div className={styles.simBody}>
                 <div className={styles.simSidebar}>
-                   <div className={styles.skeletonLine} style={{ width: '80%' }}></div>
-                   <div className={styles.skeletonLine} style={{ width: '60%' }}></div>
-                   <div className={styles.skeletonLine} style={{ width: '90%' }}></div>
-                   <div className={styles.skeletonLine} style={{ width: '70%', marginTop: 'auto' }}></div>
+                   <div className={styles.skeletonLine} style={{ width: '80%', height: 12 }}></div>
+                   <div className={styles.skeletonLine} style={{ width: '60%', height: 12 }}></div>
+                   <div className={styles.skeletonLine} style={{ width: '90%', height: 12 }}></div>
+                   <div className={styles.skeletonLine} style={{ width: '70%', height: 12, marginTop: 'auto' }}></div>
                 </div>
                 <div className={styles.simMain}>
                    {/* Search Bar Simulation */}
                    <div className={styles.simSearch}>
-                      <div className={styles.simSearchInput}>Product Manager</div>
+                      <div className={styles.simSearchInput}>
+                        {currentStep.action === 'scanning' ? "Auto-detecting matching roles..." : "Procurement Manager"}
+                      </div>
                       <div className={styles.simSearchBtn}>Search</div>
                    </div>
 
@@ -119,7 +133,7 @@ export default function HowItWorksVideo() {
                       {[1, 2, 3].map((i) => (
                         <div key={i} className={`${styles.simJobCard} ${i === 1 && currentStep.action !== 'scanning' ? styles.cardActive : ''}`}>
                           <div className={styles.cardLogo}>
-                             {i === 1 ? '🚀' : '🏢'}
+                             {i === 1 ? '🎯' : '🏢'}
                           </div>
                           <div className={styles.cardInfo}>
                              <div className={styles.cardTitle}>{i === 1 ? currentStep.data.company : 'Enterprise Inc'}</div>
@@ -130,7 +144,7 @@ export default function HowItWorksVideo() {
                              </div>
                           </div>
                           {i === 1 && currentStep.action !== 'scanning' && (
-                             <div className={styles.cardScore}>{currentStep.data.match}% Match</div>
+                             <div className={styles.cardScore} style={{ fontSize: '0.8rem', fontWeight: 800 }}>{currentStep.data.match}% AI SCORE</div>
                           )}
                         </div>
                       ))}
@@ -151,14 +165,14 @@ export default function HowItWorksVideo() {
               <div className={styles.aiOverlay}>
                  <div className={styles.hudHeader}>
                     <span className={styles.pulse}></span>
-                    AI AGENT ACTIVE
+                    AGENT STATUS: {currentStep.action.toUpperCase()}...
                  </div>
                  <div className={styles.aiOverlayText}>
-                    <span className={styles.prefix}>{">_"}</span>
+                    <span className={styles.prefix}>{">_"} </span>
                     {currentStep.status}
                  </div>
                  <div className={styles.progressBar}>
-                   <div className={styles.progressFillSync} style={{ width: `${currentStep.progress}%` }}></div>
+                   <div className={styles.progressFillSync} style={{ width: `${currentStep.progress}%`, background: '#10b981' }}></div>
                  </div>
                  {currentStep.action === 'applying' && (
                    <div className={styles.generatingVisual}>
@@ -167,7 +181,7 @@ export default function HowItWorksVideo() {
                  )}
               </div>
             </div>
-            <button className={styles.closeBtn} onClick={() => setIsPlaying(false)}>Exit Simulator</button>
+            <button className={styles.closeBtn} onClick={handleExit} style={{ background: '#f43f5e', border: 'none', color: 'white', padding: '10px 20px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>✖ Stop Simulator</button>
           </div>
         )}
       </div>

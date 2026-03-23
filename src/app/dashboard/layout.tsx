@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import styles from './dashboard.module.css';
 import { getCredits } from '@/lib/creditsStore';
+import { getSession } from 'next-auth/react';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -12,11 +13,27 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   const isActive = (path: string) => pathname === path ? styles.navItemActive : styles.navItem;
 
-  // Load live credits from store
   useEffect(() => {
+    // 1. Intercept NextAuth Google login session if present
+    getSession().then((session) => {
+      if (session?.user?.email) {
+        const existingUser = localStorage.getItem('clickapply_user');
+        if (!existingUser) {
+          const name = session.user.name || session.user.email.split('@')[0].replace(/[._]/g, ' ');
+          localStorage.setItem('clickapply_user', JSON.stringify({
+            name,
+            email: session.user.email,
+            avatar: name.split(' ').map((w: string) => w[0]).join('').toUpperCase().slice(0, 2),
+          }));
+          // Trigger a storage event manually to sync other components
+          window.dispatchEvent(new Event('storage'));
+        }
+      }
+    });
+
+    // 2. Load live credits
     const updateCredits = () => setCredits(getCredits());
     updateCredits();
-    // Listen for storage changes (when credits are deducted in another tab/component)
     window.addEventListener('storage', updateCredits);
     return () => window.removeEventListener('storage', updateCredits);
   }, []);
@@ -35,11 +52,26 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <Link href="/dashboard/jobs" className={isActive("/dashboard/jobs")}>Matches</Link>
           <Link href="/dashboard/applications" className={isActive("/dashboard/applications")}>Applications</Link>
           <Link href="/dashboard/settings" className={isActive("/dashboard/settings")}>Settings</Link>
+          <button 
+            onClick={() => {
+              localStorage.removeItem('clickapply_user');
+              window.location.href = '/';
+            }} 
+            className={styles.logoutBtn}
+            style={{ 
+              marginTop: '1rem', 
+              color: '#ff4444', 
+              background: 'rgba(255, 68, 68, 0.05)',
+              border: '1px solid rgba(255, 68, 68, 0.2)'
+            }}
+          >
+            Logout 👋
+          </button>
         </nav>
         <div className={styles.creditsSection}>
           <div className={styles.creditValue}>{credits}</div>
           <div className={styles.creditLabel}>Credits</div>
-          <Link href="/dashboard/topup" className={styles.topUpBtn} style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>
+          <Link href="/pricing" className={styles.topUpBtn} style={{ textDecoration: 'none', display: 'block', textAlign: 'center' }}>
             {credits === 0 ? '⚠️ Top Up Now' : 'Top Up'}
           </Link>
         </div>

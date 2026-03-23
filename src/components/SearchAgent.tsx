@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import styles from './SearchAgent.module.css';
 
 export default function SearchAgent() {
@@ -44,9 +44,54 @@ export default function SearchAgent() {
     }
   };
 
-  const handleStartAgent = () => {
-    // If not authenticated, open login in new tab
-    window.open('/login', '_blank');
+  // Authentication state
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [user, setUser] = useState<any>(null);
+
+  useEffect(() => {
+    const stored = localStorage.getItem('clickapply_user');
+    if (stored) {
+      setIsLoggedIn(true);
+      setUser(JSON.parse(stored));
+    }
+  }, []);
+
+  const handleStartAgent = async (job?: any) => {
+    if (!isLoggedIn) {
+      window.open('/login', '_blank');
+      return;
+    }
+
+    if (job) {
+      // If a specific job is provided (from the Auto Apply button)
+      setIsSearching(true);
+      try {
+        const res = await fetch('/api/send-application', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            toEmail: user?.email || 'swapnildambhare100@gmail.com', // Dynamic first, fallback second
+            jobTitle: job.title,
+            company: job.company,
+            applicantName: user?.name || 'Puja',
+            applicantEmail: user?.email || '',
+            matchScore: job.matchScore || 90,
+            jobId: job.id
+          })
+        });
+        const data = await res.json();
+        if (data.success) {
+          alert(`Application sent for ${job.title}! 🚀`);
+        }
+      } catch (e) {
+        console.error(e);
+      } finally {
+        setIsSearching(false);
+      }
+    } else {
+      // Redirect to dashboard if general "Start Agent" is clicked while logged in
+      window.location.href = '/dashboard';
+    }
   };
 
   return (
@@ -57,35 +102,44 @@ export default function SearchAgent() {
       </div>
 
       <div className={styles.searchCard}>
-        <div className={styles.searchMain}>
-          <div className={styles.inputWrapper}>
-            <span className={styles.searchIcon} onClick={handleLiveSearch} style={{cursor: 'pointer'}}>
-              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-            </span>
-            <span className={styles.forText}>For</span>
-            
-            <div className={styles.tags}>
-              {tags.map(tag => (
-                <span key={tag} className={styles.tag}>
-                  {tag} 
-                  <button onClick={() => setTags(tags.filter(t => t !== tag))}>×</button>
-                </span>
-              ))}
+        <div className={styles.searchMain}>          <div style={{ display: 'flex', flexDirection: 'column', flex: 1 }}>
+            <div className={styles.inputWrapper} style={{ borderBottom: 'none' }}>
+              <span className={styles.searchIcon} onClick={handleLiveSearch} style={{cursor: 'pointer'}}>
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+              </span>
+              <span className={styles.forText}>For</span>
+              
+              <div className={styles.tags}>
+                {tags.map(tag => (
+                  <span key={tag} className={styles.tag}>
+                    {tag} 
+                    <button onClick={() => setTags(tags.filter(t => t !== tag))}>×</button>
+                  </span>
+                ))}
+              </div>
+              
+              <input 
+                type="text" 
+                placeholder={tags.length === 0 ? "Enter job title & hit enter..." : "Add another title..."}
+                value={jobTitle}
+                onChange={(e) => setJobTitle(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === 'Enter') {
+                    handleAddTag();
+                    handleLiveSearch();
+                  }
+                }}
+              />
+              {jobTitle.trim() && <button className={styles.addBtn} onClick={handleAddTag}>+ ADD</button>}
             </div>
-            
-            <input 
-              type="text" 
-              placeholder={tags.length === 0 ? "Enter job title & hit enter..." : "Add another title..."}
-              value={jobTitle}
-              onChange={(e) => setJobTitle(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter') {
-                  handleAddTag();
-                  handleLiveSearch();
-                }
-              }}
-            />
-            {jobTitle.trim() && <button className={styles.addBtn} onClick={handleAddTag}>+ ADD</button>}
+            {/* Smart Tags Array */}
+            <div style={{ padding: '0px 20px 12px 40px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+              <span style={{ fontSize: '11px', color: '#888', fontWeight: 500 }}>Smart Tags:</span>
+              <button onClick={() => setTags(['Procurement'])} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', cursor: 'pointer', color: '#475569', transition: 'all 0.2s' }}>Procurement</button>
+              <button onClick={() => setTags(['Software'])} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', cursor: 'pointer', color: '#475569', transition: 'all 0.2s' }}>Software</button>
+              <button onClick={() => setTags(['Data Science'])} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', cursor: 'pointer', color: '#475569', transition: 'all 0.2s' }}>Data Science</button>
+              <button onClick={() => setTags(['Marketing'])} style={{ background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '2px 8px', borderRadius: '12px', fontSize: '11px', cursor: 'pointer', color: '#475569', transition: 'all 0.2s' }}>Marketing</button>
+            </div>
           </div>
 
           <div className={styles.divider}></div>
@@ -101,7 +155,7 @@ export default function SearchAgent() {
             </select>
           </div>
 
-          <button className={styles.startBtn} onClick={handleStartAgent}>
+          <button className={styles.startBtn} onClick={handleLiveSearch}>
             <span className={styles.robotIcon}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"></rect><circle cx="12" cy="5" r="2"></circle><path d="M12 7v4"></path><line x1="8" y1="16" x2="8" y2="16"></line><line x1="16" y1="16" x2="16" y2="16"></line></svg>
             </span> 
@@ -110,21 +164,13 @@ export default function SearchAgent() {
         </div>
       </div>
 
-      <div className={styles.filters}>
+      <div className={styles.filters} style={{ margin: '12px 0 24px 0', display: 'flex', gap: '8px', flexWrap: 'wrap', alignItems: 'center' }}>
         <button className={styles.filterPillDark} onClick={handleLiveSearch}>All Platforms ▾</button>
-        <button className={styles.filterPillOutline} onClick={handleLiveSearch}>
-          Select Profile <span style={{color: '#ef4444', marginLeft: '2px'}}>*</span> ▾
-        </button>
         <button className={styles.filterPillOutline} onClick={() => { setLocation('Remote ▾'); handleLiveSearch(); }}>
           {location}
         </button>
-        <button className={styles.filterPillDark} onClick={handleLiveSearch}>
-          Past week <span className={styles.newBadge}>NEW</span> ▾
-        </button>
-        <button className={styles.filterPillOutline} onClick={handleLiveSearch}>Additional Filters ▾</button>
-        <button className={styles.clearBtn} onClick={() => { setTags([]); setSearchResults([]); setHasSearched(false); }}>✕ Clear all</button>
+        <button className={styles.clearBtn} onClick={() => { setTags([]); setSearchResults([]); setHasSearched(false); }} style={{ marginLeft: 'auto' }}>✕ Clear all</button>
       </div>
-
       {hasSearched && (
         <div className={styles.resultsContainer}>
           <h3 className={styles.resultsTitle}>
@@ -145,7 +191,7 @@ export default function SearchAgent() {
                    <p className={styles.jobDesc}>{job.description || 'Excellent opportunity to join a fast growing team and make an immediate impact on global operations.'}</p>
                    <div className={styles.jobFooter}>
                      <span className={styles.posted}>{job.posted || 'Just now'}</span>
-                     <button className={styles.applyBtn} onClick={handleStartAgent}>Auto Apply ⚡</button>
+                     <button className={styles.applyBtn} onClick={() => handleStartAgent(job)}>Auto Apply ⚡</button>
                    </div>
                  </div>
                ))}

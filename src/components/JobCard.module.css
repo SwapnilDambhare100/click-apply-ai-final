@@ -1,0 +1,263 @@
+.jobCard {
+  background: var(--card-bg);
+  border: 1px solid var(--card-border);
+  padding: 1.5rem;
+  border-radius: 14px;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  transition: all 0.3s;
+  box-shadow: 0 5px 20px rgba(0,0,0,0.03);
+  margin-bottom: 1.5rem;
+}
+
+.jobCard:hover {
+  border-color: var(--primary);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 30px rgba(139, 92, 246, 0.1);
+}
+
+.jobCardHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.jobMain {
+  flex: 1;
+  padding-right: 2rem;
+  display: flex;
+  gap: 1.5rem;
+}
+
+.companyLogoContainer {
+  width: 50px;
+  height: 50px;
+  border-radius: 10px;
+  background: #f8fafc;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--card-border);
+  overflow: hidden;
+  flex-shrink: 0;
+}
+
+.companyLogo {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  padding: 5px;
+}
+
+.companyInitial {
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--primary);
+}
+
+.jobInfo {
+  display: flex;
+  flex-direction: column;
+}
+
+.jobTitle {
+  font-size: 1.15rem;
+  font-weight: 800;
+  margin-bottom: 0.3rem;
+  color: var(--foreground);
+}
+
+.jobCompany {
+  font-size: 0.95rem;
+  color: var(--primary);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+
+.jobDesc {
+  font-size: 0.85rem;
+  color: var(--foreground);
+  opacity: 0.7;
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.jobTags {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.jobTag {
+  background: var(--background);
+  border: 1px solid var(--card-border);
+  color: var(--foreground);
+  padding: 0.3rem 0.6rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.jobRight {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.jobMatch {
+  display: flex;
+  align-items: center;
+  font-weight: 700;
+  color: #10b981;
+  background: #ecfdf5;
+  padding: 4px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  border: 1px solid #d1fae5;
+  margin-bottom: 0.5rem;
+}
+
+.applyBtn {
+  background: linear-gradient(90deg, #3b82f6, #10b981);
+  color: #fff;
+  border: none;
+  padding: 0.6rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 4px 15px rgba(16, 185, 129, 0.2);
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.applyBtn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
+}
+
+.applyBtn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.applyBtn.applied {
+  background: var(--success);
+  box-shadow: none;
+}
+
+.seeMoreBtn {
+  background: transparent;
+  border: none;
+  color: var(--primary);
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  align-self: flex-start;
+  margin-top: -0.5rem;
+  padding-left: 4.8rem;
+}
+
+/* EXPANDED CONTENT */
+.jobExpandedContent {
+  margin-top: 1.5rem;
+  padding-top: 1.5rem;
+  border-top: 1px dashed var(--card-border);
+  animation: slideDown 0.3s ease-out;
+  width: 100%;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.jobDetailGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.jobDetailSection h4 {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--foreground);
+  margin-bottom: 0.8rem;
+}
+
+.jobDetailSection p, .jobDetailSection li {
+  color: var(--foreground);
+  opacity: 0.8;
+  line-height: 1.6;
+  font-size: 0.9rem;
+  margin-bottom: 0.5rem;
+}
+
+.jobDetailSection ul {
+  padding-left: 1.2rem;
+}
+
+.jobDetailSidebar {
+  background: rgba(255, 255, 255, 0.02);
+  padding: 1.2rem;
+  border-radius: 12px;
+  border: 1px solid var(--card-border);
+}
+
+.jobDetailSidebarItem {
+  margin-bottom: 1rem;
+}
+
+.jobDetailSidebarItem:last-child {
+  margin-bottom: 0;
+}
+
+.jobDetailSidebarLabel {
+  font-size: 0.75rem;
+  color: var(--foreground);
+  opacity: 0.6;
+  font-weight: 600;
+  margin-bottom: 0.2rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.jobDetailSidebarValue {
+  font-size: 0.95rem;
+  color: var(--foreground);
+  font-weight: 600;
+}
+
+.jobActions {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.btnSecondaryAction {
+  background: transparent;
+  color: var(--foreground);
+  border: 1px solid var(--card-border);
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnSecondaryAction:hover {
+  background: var(--card-bg);
+  border-color: var(--primary);
+}
