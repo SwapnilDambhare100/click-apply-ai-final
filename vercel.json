@@ -1,8 +1,9 @@
 {
+  "installCommand": "npm install --legacy-peer-deps",
   "crons": [
     {
       "path": "/api/cron/sync-jobs",
-      "schedule": "0 */3 * * *"
+      "schedule": "0 0 * * *"
     }
   ]
 }
