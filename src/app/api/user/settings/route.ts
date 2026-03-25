@@ -15,7 +15,7 @@ export async function GET(request: Request) {
     }
 
     const user = await prisma.user.findUnique({
-      where: { email: userEmail },
+      where: { email: userEmail ?? undefined },
       select: {
         autoApplyEnabled: true,
         autoApplyKeywords: true,
