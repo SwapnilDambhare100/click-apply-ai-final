@@ -12,7 +12,6 @@ const toolConfig: Record<string, { title: string, desc: string, inputLabel: stri
   'post': { title: 'LinkedIn Post Generator', desc: 'Generate an engaging post for your network.', inputLabel: 'What do you want to share?', placeholder: 'e.g. I just completed a new certificate in AWS' },
   'headline': { title: 'LinkedIn Headline Generator', desc: 'Create a catchy headline that attracts recruiters.', inputLabel: 'Your current job title', placeholder: 'e.g. Product Manager' },
   'recommendation': { title: 'LinkedIn Recommendation Generator', desc: 'Write a glowing recommendation for a colleague.', inputLabel: 'Colleague Name & Role', placeholder: 'e.g. John Doe, UI Designer' },
-  'resume-builder': { title: 'AI Resume Builder', desc: 'Generate a complete resume structure from your details.', inputLabel: 'Your Industry & Experience level', placeholder: 'e.g. Marketing, Mid-level' },
   'resume-gpt': { title: 'Resume GPT Assistant', desc: 'Chat with AI to improve your resume bullet points.', inputLabel: 'Paste a resume bullet point', placeholder: 'e.g. Increased sales by 20%...' },
   'resume-score': { title: 'AI Resume Scorer', desc: 'Score your resume against industry standards.', inputLabel: 'Paste your resume text', placeholder: 'e.g. John Doe, Software Engineer...' },
   'resume-tracker': { title: 'Application Tracker', desc: 'Organize and track your job applications smartly.', inputLabel: 'Paste Job Post URL', placeholder: 'e.g. https://linkedin.com/jobs/view/12345' },
@@ -20,7 +19,6 @@ const toolConfig: Record<string, { title: string, desc: string, inputLabel: stri
   'job-description': { title: 'Job Description Generator', desc: 'For recruiters: Generate a precise JD.', inputLabel: 'Role Title', placeholder: 'e.g. Full Stack Developer' },
 };
 
-import ResumeBuilder from './ResumeBuilder';
 
 export default function ToolPage() {
   const params = useParams();
@@ -31,17 +29,6 @@ export default function ToolPage() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [result, setResult] = useState('');
 
-  if (toolId === 'resume-builder') {
-    return (
-      <>
-        <Navbar />
-        <main className={styles.container} style={{ minHeight: '80vh' }}>
-          <ResumeBuilder />
-        </main>
-        <Footer />
-      </>
-    );
-  }
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

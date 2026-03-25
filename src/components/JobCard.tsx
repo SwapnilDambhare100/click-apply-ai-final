@@ -12,7 +12,9 @@ interface Job {
   posted: string;
   matchScore: number;
   description: string;
+  aiVerified?: boolean;
 }
+
 
 interface User {
   name: string;
@@ -132,7 +134,14 @@ export default function JobCard({ job, user, onApplySuccess, onToast, appliedJob
           <div className={styles.jobMatch}>
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: '6px'}}><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
             {job.matchScore}% Match
+            {job.aiVerified && (
+              <span className={styles.aiBadge} title="Semantic analysis verified by AI">
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"></path></svg>
+                AI
+              </span>
+            )}
           </div>
+
           <button 
             className={`${styles.applyBtn} ${isApplied ? styles.applied : ''}`}
             onClick={handleApply}

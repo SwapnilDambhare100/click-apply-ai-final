@@ -66,7 +66,6 @@ export default function Navbar() {
               </div>
               <div className={styles.dropdownSection}>
                 <h4>RESUME & APPLICATION</h4>
-                <Link href="/tools/resume-builder">Resume Builder</Link>
                 <Link href="/tools/resume-gpt">Resume GPT</Link>
                 <Link href="/tools/resume-score">Resume Score</Link>
                 <Link href="/tools/cover-letter">Cover Letter Generator</Link>

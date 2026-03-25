@@ -141,6 +141,21 @@
   transform: translateY(-2px);
   box-shadow: 0 8px 20px rgba(16, 185, 129, 0.4);
 }
+.aiBadge {
+  font-size: 0.65rem;
+  background: linear-gradient(135deg, #8b5cf6, #3b82f6);
+  color: white;
+  padding: 2px 8px;
+  border-radius: 4px;
+  text-transform: uppercase;
+  font-weight: 800;
+  margin-left: 10px;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  box-shadow: 0 2px 10px rgba(139, 92, 246, 0.3);
+  letter-spacing: 0.05em;
+}
 
 .applyBtn:disabled {
   opacity: 0.7;
