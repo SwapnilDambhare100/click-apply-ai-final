@@ -23,6 +23,7 @@ export async function GET(request: Request) {
     const theirstackApiKey = process.env.THEIRSTACK_API_KEY;
     const rapidApiIndianJobsKey = process.env.RAPIDAPI_INDIAN_JOBS_KEY;
     const findWorkKey = process.env.FINDWORK_API_KEY;
+    const searchapiApiKey = process.env.SEARCHAPI_API_KEY;
 
     // Use queryParam if provided, otherwise use full list
     const domainsToSearch = queryParam ? [queryParam] : [
@@ -186,6 +187,25 @@ export async function GET(request: Request) {
       } catch (e) { return []; }
     };
 
+    const fetchGoogleJobs = async (domain: string) => {
+      if (!searchapiApiKey) return [];
+      try {
+        const url = `https://www.searchapi.io/api/v1/search?engine=google_jobs&q=${encodeURIComponent(domain)}&location=India&api_key=${searchapiApiKey}`;
+        const res = await fetch(url);
+        const data = await res.json();
+        return (data.jobs || []).map((job: any) => ({
+          externalId: 'goog_' + (job.job_id || Math.random().toString()),
+          title: job.title,
+          company: job.company_name,
+          location: job.location || (job.detected_extensions?.work_from_home ? 'Remote' : 'India'),
+          description: (job.description || '').substring(0, 300) + '...',
+          postedAt: job.detected_extensions?.posted_at ? new Date() : new Date(),
+          url: job.apply_link || job.sharing_link || '',
+          source: 'Google Jobs'
+        }));
+      } catch (e) { return []; }
+    };
+
     // Parallel Processing
     for (const domain of domainsToSearch) {
       console.log(`CRON: Syncing ${domain} in parallel...`);
@@ -196,7 +216,8 @@ export async function GET(request: Request) {
         fetchIndianJobs(domain),
         fetchLinkedIn(),
         fetchJSearch(domain),
-        fetchFindWork(domain)
+        fetchFindWork(domain),
+        fetchGoogleJobs(domain)
       ]);
 
       const domainJobs = results
