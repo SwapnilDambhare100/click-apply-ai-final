@@ -128,10 +128,10 @@ export async function POST(request: Request) {
           postedAt: { gt: sixtyDaysAgo }
         };
         if (tags.length > 0 && tags[0] !== '') {
-          whereClause.OR = tags.map((tag: string) => ([
-            { title: { contains: tag, mode: 'insensitive' } },
-            { description: { contains: tag, mode: 'insensitive' } }
-          ])).flat();
+          // 🔒 TITLE-ONLY filter: Never match on description alone to avoid irrelevant results
+          whereClause.OR = tags.map((tag: string) => ({
+            title: { contains: tag, mode: 'insensitive' }
+          }));
         }
         dbJobs = await (prisma.job as any).findMany({
           where: whereClause,
