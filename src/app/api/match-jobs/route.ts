@@ -159,7 +159,20 @@ export async function POST(request: Request) {
       liveJobs = results
         .filter((r): r is PromiseFulfilledResult<any[]> => r.status === 'fulfilled')
         .flatMap(r => r.value);
-      console.log(`Matching Engine: Fetched ${liveJobs.length} live jobs from APIs.`);
+
+      // 🔒 STRICT KEYWORD FILTER: Only keep jobs that actually match the search tags
+      if (tags.length > 0 && tags[0] !== '') {
+        liveJobs = liveJobs.filter(job => {
+          const titleLower = (job.title || '').toLowerCase();
+          const descLower = (job.description || '').toLowerCase();
+          return tags.some((tag: string) =>
+            titleLower.includes(tag.toLowerCase()) ||
+            descLower.includes(tag.toLowerCase())
+          );
+        });
+      }
+
+      console.log(`Matching Engine: ${liveJobs.length} relevant live jobs after keyword filter.`);
     }
 
     // Step 3: Merge and score
