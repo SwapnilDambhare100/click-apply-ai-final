@@ -150,3 +150,27 @@
   border: 2px solid rgba(255, 255, 255, 0.2);
   box-shadow: 0 4px 10px rgba(139, 92, 246, 0.3);
 }
+
+@media (max-width: 900px) {
+  .navbar {
+    flex-wrap: wrap;
+    padding: 1rem;
+    gap: 1rem;
+    justify-content: center;
+  }
+  .links {
+    gap: 1rem;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  .logo a {
+    font-size: 1.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .links a:not(.loginBtn):not(.loginText), .dropdownBtn {
+    font-size: 0.85rem;
+  }
+}
+

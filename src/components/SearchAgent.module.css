@@ -425,3 +425,30 @@
   transform: translateY(-2px);
   box-shadow: 0 5px 15px rgba(139, 92, 246, 0.3);
 }
+
+@media (max-width: 900px) {
+  .searchMain {
+    flex-direction: column;
+    width: 100%;
+    align-items: stretch;
+  }
+  .divider {
+    display: none;
+  }
+  .inputWrapper, .targetWrapper {
+    width: 100%;
+    padding: 0.5rem 0;
+  }
+  .startBtn {
+    width: 100%;
+    justify-content: center;
+    margin-top: 0.5rem;
+  }
+  .header h2 {
+    font-size: 1.75rem;
+  }
+  .header p {
+    font-size: 1rem;
+  }
+}
+

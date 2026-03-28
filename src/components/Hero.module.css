@@ -222,11 +222,33 @@
     flex-direction: column;
     text-align: center;
     padding: 2rem 1rem;
+    gap: 2rem;
+  }
+  .title {
+    font-size: 2.75rem;
+  }
+  .description {
+    font-size: 1.1rem;
   }
   .actions {
     justify-content: center;
+    flex-direction: column;
+    width: 100%;
+  }
+  .primaryBtn {
+    width: 100%;
+    max-width: 300px;
   }
   .mockup {
     transform: none;
+    max-width: 350px;
+    margin: 0 auto;
   }
 }
+
+@media (max-width: 480px) {
+  .title {
+    font-size: 2.25rem;
+  }
+}
+
