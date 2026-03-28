@@ -160,32 +160,16 @@ export async function POST(request: Request) {
         .filter((r): r is PromiseFulfilledResult<any[]> => r.status === 'fulfilled')
         .flatMap(r => r.value);
 
-      // 🔒 STRICT KEYWORD FILTER: Title must match first, description is secondary fallback
+      // 🔒 STRICT TITLE-ONLY FILTER: No fallback to description — ever.
       if (tags.length > 0 && tags[0] !== '') {
-        // First pass: only title matches
-        const titleMatches = liveJobs.filter(job => {
+        liveJobs = liveJobs.filter(job => {
           const titleLower = (job.title || '').toLowerCase();
           return tags.some((tag: string) => titleLower.includes(tag.toLowerCase()));
         });
-
-        // If we have enough title matches, use only those (strict mode)
-        if (titleMatches.length >= 3) {
-          liveJobs = titleMatches;
-        } else {
-          // Fallback: also include description matches if title matches are scarce
-          liveJobs = liveJobs.filter(job => {
-            const titleLower = (job.title || '').toLowerCase();
-            const descLower = (job.description || '').toLowerCase();
-            return tags.some((tag: string) =>
-              titleLower.includes(tag.toLowerCase()) ||
-              descLower.includes(tag.toLowerCase())
-            );
-          });
-        }
       }
 
+      console.log(`Matching Engine: ${liveJobs.length} relevant live jobs after strict title filter.`);
 
-      console.log(`Matching Engine: ${liveJobs.length} relevant live jobs after keyword filter.`);
     }
 
     // Step 3: Merge and score
@@ -220,7 +204,8 @@ export async function POST(request: Request) {
       const score = calculateMatchScore(job.description, job.title, skills, tags);
       const titleLower = (job.title || '').toLowerCase();
       const hasDirectTitleMatch = tags.some((tag: string) => titleLower.includes(tag.toLowerCase()));
-      const isTagMatch = tags.length === 0 || hasDirectTitleMatch || tags.some((tag: string) => (job.description || '').toLowerCase().includes(tag.toLowerCase()));
+      // 🔒 STRICT: isTagMatch uses title ONLY - no description fallback
+      const isTagMatch = tags.length === 0 || hasDirectTitleMatch;
       return { ...job, matchScore: score, isTagMatch };
     });
 
