@@ -81,12 +81,18 @@ export async function POST(request: Request) {
       auth: { user: userEmail, pass }
     });
 
-    const info = await transporter.sendMail({
+    const sendPromise = transporter.sendMail({
       from: `"${applicantName} (via ClickApplyAI)" <${userEmail}>`,
       to: toEmail,
       subject: `Job Application: ${jobTitle} - ${applicantName}`,
       html: emailHtml
     });
+
+    const timeoutPromise = new Promise((_, reject) => 
+      setTimeout(() => reject(new Error('SMTP Timeout - took more than 3 seconds')), 3000)
+    );
+
+    const info: any = await Promise.race([sendPromise, timeoutPromise]);
 
     return NextResponse.json({ success: true, message: 'Email sent successfully', draft: emailHtml, messageId: info.messageId });
   } catch (error) {
