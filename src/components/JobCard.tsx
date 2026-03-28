@@ -52,6 +52,13 @@ export default function JobCard({ job, user, onApplySuccess, onToast, appliedJob
   const initial = job.company.charAt(0).toUpperCase();
 
   const handleApply = async () => {
+    // ✅ LOGIN GUARD: Redirect to login if user is not logged in
+    const stored = localStorage.getItem('clickapply_user');
+    if (!stored) {
+      window.location.href = '/login';
+      return;
+    }
+
     setApplying(true);
     
     // Deduct Credit
@@ -149,6 +156,16 @@ export default function JobCard({ job, user, onApplySuccess, onToast, appliedJob
           >
             {isApplied ? 'Already Applied ✓' : (applying ? 'Sending... ⏳' : 'Auto Apply (1 Credit) ⚡')}
           </button>
+          {(job as any).url && (
+            <a 
+              href={(job as any).url} 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ display: 'block', marginTop: '0.5rem', textAlign: 'center', fontSize: '0.8rem', color: 'var(--primary)', textDecoration: 'underline' }}
+            >
+              View Original Job ↗
+            </a>
+          )}
         </div>
       </div>
 

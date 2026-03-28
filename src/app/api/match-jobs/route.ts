@@ -160,17 +160,30 @@ export async function POST(request: Request) {
         .filter((r): r is PromiseFulfilledResult<any[]> => r.status === 'fulfilled')
         .flatMap(r => r.value);
 
-      // 🔒 STRICT KEYWORD FILTER: Only keep jobs that actually match the search tags
+      // 🔒 STRICT KEYWORD FILTER: Title must match first, description is secondary fallback
       if (tags.length > 0 && tags[0] !== '') {
-        liveJobs = liveJobs.filter(job => {
+        // First pass: only title matches
+        const titleMatches = liveJobs.filter(job => {
           const titleLower = (job.title || '').toLowerCase();
-          const descLower = (job.description || '').toLowerCase();
-          return tags.some((tag: string) =>
-            titleLower.includes(tag.toLowerCase()) ||
-            descLower.includes(tag.toLowerCase())
-          );
+          return tags.some((tag: string) => titleLower.includes(tag.toLowerCase()));
         });
+
+        // If we have enough title matches, use only those (strict mode)
+        if (titleMatches.length >= 3) {
+          liveJobs = titleMatches;
+        } else {
+          // Fallback: also include description matches if title matches are scarce
+          liveJobs = liveJobs.filter(job => {
+            const titleLower = (job.title || '').toLowerCase();
+            const descLower = (job.description || '').toLowerCase();
+            return tags.some((tag: string) =>
+              titleLower.includes(tag.toLowerCase()) ||
+              descLower.includes(tag.toLowerCase())
+            );
+          });
+        }
       }
+
 
       console.log(`Matching Engine: ${liveJobs.length} relevant live jobs after keyword filter.`);
     }
