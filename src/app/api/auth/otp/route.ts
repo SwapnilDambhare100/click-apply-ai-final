@@ -46,7 +46,8 @@ export async function POST(req: Request) {
 
       try {
         // We AWAIT the email to catch if Gmail rejects the login/password
-        await transporter.sendMail({
+        // STRIKE: We add a strict 3-SECOND TIMEOUT so it NEVER hangs the UI!
+        const sendPromise = transporter.sendMail({
           from: `"ClickApply AI" <${user}>`,
           to: email,
           subject: `Your Verification Code: ${otp}`,
@@ -64,6 +65,13 @@ export async function POST(req: Request) {
             </div>
           `,
         });
+
+        const timeoutPromise = new Promise((_, reject) => 
+          setTimeout(() => reject(new Error('SMTP Timeout - took more than 3 seconds')), 3000)
+        );
+
+        await Promise.race([sendPromise, timeoutPromise]);
+
         return NextResponse.json({ success: true, message: 'OTP sent successfully' });
       } catch (emailError: any) {
         console.error("Failed to send OTP Email via SMTP:", emailError.message);
