@@ -44,27 +44,31 @@ export async function POST(req: Request) {
 
       const actionText = action === 'register' ? 'creating your account' : 'logging in';
 
-      // Send Email Asynchronously so we don't block the UI
-      transporter.sendMail({
-        from: `"ClickApply AI" <${user}>`,
-        to: email,
-        subject: `Your Verification Code: ${otp}`,
-        html: `
-          <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
-            <h2 style="color: #4F46E5;">Verification Code</h2>
-            <p>Hi there,</p>
-            <p>You are ${actionText} on <strong>ClickApply AI</strong>. Use the verification code below to proceed:</p>
-            <div style="background: #F3F4F6; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #111; border-radius: 8px; margin: 20px 0;">
-              ${otp}
+      try {
+        // Must AWAIT the email to send, otherwise Next.js can kill the process before it finishes sending!
+        await transporter.sendMail({
+          from: `"ClickApply AI" <${user}>`,
+          to: email,
+          subject: `Your Verification Code: ${otp}`,
+          html: `
+            <div style="font-family: Arial, sans-serif; padding: 20px; color: #333; max-width: 600px; margin: auto; border: 1px solid #eee; border-radius: 10px;">
+              <h2 style="color: #4F46E5;">Verification Code</h2>
+              <p>Hi there,</p>
+              <p>You are ${actionText} on <strong>ClickApply AI</strong>. Use the verification code below to proceed:</p>
+              <div style="background: #F3F4F6; padding: 20px; text-align: center; font-size: 32px; font-weight: bold; letter-spacing: 5px; color: #111; border-radius: 8px; margin: 20px 0;">
+                ${otp}
+              </div>
+              <p style="font-size: 14px; color: #666;">This code will expire in 5 minutes. If you did not request this, please ignore this email.</p>
+              <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
+              <p style="font-size: 12px; color: #999; text-align: center;">&copy; 2026 ClickApply AI. All rights reserved.</p>
             </div>
-            <p style="font-size: 14px; color: #666;">This code will expire in 5 minutes. If you did not request this, please ignore this email.</p>
-            <hr style="border: none; border-top: 1px solid #eee; margin: 20px 0;" />
-            <p style="font-size: 12px; color: #999; text-align: center;">&copy; 2026 ClickApply AI. All rights reserved.</p>
-          </div>
-        `,
-      }).catch(err => console.error("SMTP async error:", err));
-
-      return NextResponse.json({ success: true, message: 'OTP sent successfully' });
+          `,
+        });
+        return NextResponse.json({ success: true, message: 'OTP sent successfully' });
+      } catch (emailError: any) {
+        console.error("Failed to send OTP Email:", emailError);
+        return NextResponse.json({ success: false, error: 'Failed to send OTP email: ' + emailError.message }, { status: 500 });
+      }
     }
 
     // --- TYPE: VERIFY ---
