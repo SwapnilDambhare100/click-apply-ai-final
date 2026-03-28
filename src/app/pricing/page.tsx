@@ -6,14 +6,16 @@ import styles from './pricing.module.css';
 import { useState } from 'react';
 import { addCredits } from '@/lib/creditsStore';
 
+import { load } from '@cashfreepayments/cashfree-js';
+
 export default function Pricing() {
   const [loading, setLoading] = useState<number | null>(null);
 
   const handleCheckout = async (amount: number) => {
     setLoading(amount);
     try {
-      // Create Razorpay order
-      const res = await fetch('/api/razorpay', {
+      // Create Cashfree session
+      const res = await fetch('/api/cashfree', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount }) // Dynamic amount based on plan
@@ -21,18 +23,31 @@ export default function Pricing() {
       const data = await res.json();
 
       if (data.success) {
-        let creditsToAdd = 0;
-        if (amount === 9) creditsToAdd = 50;
-        if (amount === 25) creditsToAdd = 100;
-        if (amount === 99) creditsToAdd = 99999; // Represents Unlimited
+        // If no credentials, trigger Mock Simulator
+        if (data.payment_session_id.startsWith('mock_session_')) {
+          let creditsToAdd = 0;
+          if (amount === 9) creditsToAdd = 50;
+          if (amount === 25) creditsToAdd = 100;
+          if (amount === 99) creditsToAdd = 99999; // Represents Unlimited
 
-        alert(`Razorpay Checkout Simulator!\nOrder ID: ${data.order.id}\nAmount: ₹${amount}.00\n\nSuccessfully simulated payment. Added ${creditsToAdd === 99999 ? 'Unlimited' : creditsToAdd} credits to your account!`);
+          alert(`Cashfree Gateway Simulator!\nOrder ID: ${data.order_guid}\nAmount: ₹${amount}.00\n\nSuccessfully simulated payment. Added ${creditsToAdd === 99999 ? 'Unlimited' : creditsToAdd} credits!`);
+          
+          addCredits(creditsToAdd);
+          window.dispatchEvent(new Event('storage'));
+          window.location.href = '/dashboard';
+          return;
+        }
+
+        // Live Cashfree Checkout
+        const cashfree = await load({ mode: data.environment }); 
+        const checkoutOptions = {
+          paymentSessionId: data.payment_session_id,
+          redirectTarget: "_self"
+        };
         
-        addCredits(creditsToAdd);
-        window.dispatchEvent(new Event('storage'));
-        window.location.href = '/dashboard';
+        cashfree.checkout(checkoutOptions);
       } else {
-        alert('Checkout failed.');
+        alert(`Checkout failed: ${data.error}`);
       }
     } catch (e) {
       console.error(e);

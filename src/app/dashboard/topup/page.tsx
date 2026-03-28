@@ -10,9 +10,7 @@ const CREDIT_PACKS = [
   { id: 'pack_100', credits: 100, price: 249, label: 'Pro', highlight: false },
 ];
 
-declare global {
-  interface Window { Razorpay: any; }
-}
+import { load } from '@cashfreepayments/cashfree-js';
 
 export default function TopUpPage() {
   const [credits, setCredits] = useState(0);
@@ -20,76 +18,46 @@ export default function TopUpPage() {
 
   useEffect(() => {
     setCredits(getCredits());
-    // Load Razorpay SDK script
-    if (!document.getElementById('razorpay-sdk')) {
-      const script = document.createElement('script');
-      script.id = 'razorpay-sdk';
-      script.src = 'https://checkout.razorpay.com/v1/checkout.js';
-      document.body.appendChild(script);
-    }
   }, []);
 
   const handleTopUp = async (pack: typeof CREDIT_PACKS[0]) => {
     setLoading(pack.id);
     try {
-      // Create order on backend
-      const res = await fetch('/api/razorpay', {
+      // Create order on backend via Cashfree
+      const res = await fetch('/api/cashfree', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: pack.price })
       });
-      const { order } = await res.json();
+      const data = await res.json();
 
-      const razorpayKey = process.env.NEXT_PUBLIC_RAZORPAY_KEY || '';
-
-      // If no real Razorpay key, simulate success
-      if (!razorpayKey || !window.Razorpay) {
-        const updated = addCredits(pack.credits);
-        setCredits(updated);
-        alert(`✅ ${pack.credits} credits added! (Simulated — add NEXT_PUBLIC_RAZORPAY_KEY for real payments)`);
+      if (!data.success) {
+        alert(`Payment initialization failed: ${data.error}`);
         setLoading(null);
         return;
       }
 
-      // Open Razorpay with UPI pre-selected using the _[method] override
-      const options: any = {
-        key: razorpayKey,
-        amount: order.amount,
-        currency: order.currency,
-        name: 'ClickApply AI',
-        description: `${pack.credits} Application Credits`,
-        image: '/logo.png',
-        order_id: order.id,
-        handler: (response: any) => {
-          const updated = addCredits(pack.credits);
-          setCredits(updated);
-          alert(`🎉 Payment successful! ${pack.credits} credits added.`);
-        },
-        prefill: {
-          email: 'swapnildambhare100@gmail.com',
-          contact: '',
-        },
-        // Force-enable all payment modes
-        method: {
-          upi: 1,
-          wallet: 1,
-          netbanking: 1,
-          card: 1,
-          emi: 0,
-          bank_transfer: 0,
-        },
-        // Pre-open UPI tab directly (works after UPI is enabled in dashboard)
-        '_[method]': 'upi',
-        theme: { color: '#4F46E5' },
-        modal: { confirm_close: true },
-      };
+      // If no real Cashfree key, simulate success
+      if (data.payment_session_id.startsWith('mock_session_')) {
+        const updated = addCredits(pack.credits);
+        setCredits(updated);
+        alert(`✅ ${pack.credits} credits added! (Simulated — add CASHFREE_APP_ID for real payments)`);
+        setLoading(null);
+        return;
+      }
 
-      const rzp = new window.Razorpay(options);
-      rzp.open();
+      // Open Cashfree Checkout
+      const cashfree = await load({ mode: data.environment }); 
+      const checkoutOptions = {
+        paymentSessionId: data.payment_session_id,
+        redirectTarget: "_self"
+      };
+      
+      cashfree.checkout(checkoutOptions);
+
     } catch (err) {
       console.error(err);
       alert('Payment initialization failed. Please try again.');
-    } finally {
       setLoading(null);
     }
   };
