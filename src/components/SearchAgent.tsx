@@ -31,7 +31,7 @@ export default function SearchAgent() {
       const res = await fetch('/api/match-jobs', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ profile: { domain: query } })
+        body: JSON.stringify({ tags: tags.length > 0 ? tags : ['Software Engineer'] })
       });
       const data = await res.json();
       if (data.success && data.data) {
